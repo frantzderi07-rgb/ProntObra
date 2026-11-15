@@ -162,6 +162,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
   });
 
   return (
+    <>
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans">
       {/* HERO SECTION - Mantendo exatamente as cores da segunda foto (#0B1F3A, #0F172A e Laranja) */}
         <section className="relative overflow-hidden bg-[#091326] text-white">
@@ -375,31 +376,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
               </div>
             </div>
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#091326] via-transparent to-transparent" />
-
-                <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-white/15 bg-[#0F172A]/95 p-4 backdrop-blur-md">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500 text-white">
-                        <HardHat className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-white">
-                          Cobertura Regional SP & MS
-                        </p>
-                        <p className="text-xs text-slate-300">
-                          724 municípios integrados na plataforma
-                        </p>
-                      </div>
-                    </div>
-                    <span className="rounded-full bg-orange-500/20 px-2.5 py-1 text-xs font-bold text-orange-400">
-                      Ativo
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
-          
 
           {/* 3 CARDS INFERIORES */}
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -830,7 +807,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
         </div>
       )}
     </div>
-  );
+  </>);
 }
 
 
