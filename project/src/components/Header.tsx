@@ -46,6 +46,7 @@ export default function Header() {
             {navLink('Vagas', page.name === 'jobs' || page.name === 'job-detail', () => navigate({ name: 'jobs' }))}
             {navLink('Aprender', page.name === 'learn', () => navigate({ name: 'learn' }))}
             {navLink('Sobre Nós', page.name === 'about', () => navigate({ name: 'about' }))}
+            {navLink('Lojas Parceiras', page.name === 'partners', () => navigate({ name: 'partners' }))}
             {navLink('Publicar Vaga', page.name === 'post-job', () => navigate({ name: 'post-job' }))}
           </nav>
 
@@ -93,6 +94,7 @@ export default function Header() {
               {navLink('Vagas', page.name === 'jobs', () => navigate({ name: 'jobs' }))}
               {navLink('Aprender', page.name === 'learn', () => navigate({ name: 'learn' }))}
               {navLink('Sobre Nós', page.name === 'about', () => navigate({ name: 'about' }))}
+              {navLink('Lojas Parceiras', page.name === 'partners', () => navigate({ name: 'partners' }))}
               {navLink('Publicar Vaga', page.name === 'post-job', () => navigate({ name: 'post-job' }))}
               {user && navLink('Painel', page.name === 'dashboard', () => navigate({ name: 'dashboard' }))}
               <div className="mt-2 border-t border-gray-100 pt-3">

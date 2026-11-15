@@ -14,6 +14,7 @@ import PostJobPage from './pages/PostJobPage';
 import DashboardPage from './pages/DashboardPage';
 import LearnPage from './pages/LearnPage';
 import AboutPage from './pages/AboutPage';
+import PartnersPage from './pages/PartnersPage';
 
 function AppContent() {
   const { page } = useNav();
@@ -65,6 +66,8 @@ function AppContent() {
         return <LearnPage />;
       case 'about':
         return <AboutPage />;
+      case 'partners':
+        return <PartnersPage />;
       default:
         return <HomePage professionals={professionals} jobs={jobs} />;
     }

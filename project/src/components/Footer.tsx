@@ -31,6 +31,7 @@ export default function Footer() {
               <li><button onClick={() => navigate({ name: 'jobs' })} className="hover:text-orange-400">Vagas</button></li>
               <li><button onClick={() => navigate({ name: 'learn' })} className="inline-flex items-center gap-1 hover:text-orange-400"><GraduationCap size={14} /> Para Aprender</button></li>
               <li><button onClick={() => navigate({ name: 'about' })} className="hover:text-orange-400">Sobre Nós</button></li>
+              <li><button onClick={() => navigate({ name: 'partners' })} className="hover:text-orange-400">Lojas Parceiras</button></li>
               <li><button onClick={() => navigate({ name: 'post-job' })} className="hover:text-orange-400">Publicar Vaga</button></li>
             </ul>
           </div>

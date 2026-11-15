@@ -3,6 +3,7 @@ import { Award, BookOpen, Calculator, CheckCircle2, GraduationCap, Ruler } from 
 import { useAuth } from '@/lib/auth';
 import { updateLocalProfile } from '@/lib/localStore';
 import AuthModal from '@/components/AuthModal';
+import { PracticalVideoCard } from '@/components/QuickVideos';
 
 const courses = [
   { id: 'projetos', title: 'Leitura de Projetos', description: 'Interprete plantas, cortes, escalas e especificações da obra.', duration: '2 horas', category: 'Planejamento' },
@@ -65,6 +66,11 @@ export default function LearnPage() {
               );
             })}
           </div>
+        </section>
+
+        <section>
+          <h2 className="mb-4 font-display text-xl font-bold text-navy-900">Vídeo prático da semana</h2>
+          <PracticalVideoCard />
         </section>
 
         <section className="card grid gap-8 p-6 sm:p-8 lg:grid-cols-2">

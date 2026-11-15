@@ -23,6 +23,8 @@ import type { Job, ProfessionalWithStats } from '../lib/types';
 import CitySelectorSpMs from '../components/CitySelectorSpMs';
 import ProfessionalCard from '../components/ProfessionalCard';
 import { saveLocalJob } from '../lib/localStore';
+import QuickVideos from '../components/QuickVideos';
+import CommunityFeed from '../components/CommunityFeed';
 
 interface HomePageProps {
   professionals?: ProfessionalWithStats[];
@@ -74,7 +76,7 @@ const slidesHero = [
   },
 ];
 
-export default function HomePage({ professionals = [] }: HomePageProps) {
+export default function HomePage({ professionals = [], jobs = [] }: HomePageProps) {
   const { navigate } = useNav();
   const [slideAtual, setSlideAtual] = useState(0);
   const [pausado, setPausado] = useState(false);
@@ -249,6 +251,18 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
       prof.nome.toLowerCase().includes(especialidadeFiltro.toLowerCase());
     return matchCidade && matchEstado && matchEsp;
   });
+  const representedCities = new Set(professionals.map((person) => `${person.city}/${person.state}`)).size;
+  const reviewHighlights = professionals
+    .flatMap((person) => person.reviews.map((review) => ({
+      id: review.id,
+      reviewer: review.reviewer_name,
+      professional: person.full_name,
+      specialty: person.specialty,
+      comment: review.comment,
+      rating: review.rating,
+    })))
+    .filter((review) => review.comment)
+    .slice(0, 3);
 
   return (
     <>
@@ -260,7 +274,7 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
           className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-luminosity"
           style={{
             backgroundImage:
-              "url('https://pexels.com')",
+              `url('${slidesHero[0].src}')`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#091326] via-[#0B1F3A]/95 to-[#091326]/85" />
@@ -548,6 +562,8 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
         </div>
       </section>
 
+      <QuickVideos />
+
       {/* RESULTADOS FILTRADOS */}
       <section id="resultados-busca" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -626,6 +642,51 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
           </div>
         )}
       </section>
+
+      <section className="bg-white px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-7">
+            <p className="text-sm font-bold uppercase tracking-wider text-orange-600">Confiança em movimento</p>
+            <h2 className="mt-2 section-title">Indicadores da comunidade</h2>
+            <p className="mt-2 text-sm text-gray-600">Números calculados com base nos perfis e oportunidades atualmente publicados na plataforma.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <ImpactMetric value={professionals.length} label="Profissionais cadastrados" />
+            <ImpactMetric value={representedCities} label="Cidades atendidas em todo o Brasil" />
+            <ImpactMetric value={jobs.length} label="Obras e oportunidades conectadas" />
+          </div>
+
+          <div className="mt-12">
+            <div className="mb-5 flex items-end justify-between gap-3">
+              <div>
+                <h3 className="font-display text-xl font-bold text-navy-900">Depoimentos da comunidade</h3>
+                <p className="mt-1 text-sm text-gray-500">Avaliações de clientes publicadas nos perfis profissionais.</p>
+              </div>
+              <button type="button" onClick={() => navigate({ name: 'professionals' })} className="text-sm font-semibold text-orange-600 hover:underline">Ver profissionais</button>
+            </div>
+            {reviewHighlights.length > 0 ? (
+              <div className="grid gap-4 md:grid-cols-3">
+                {reviewHighlights.map((review) => (
+                  <article key={review.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <div className="flex items-center gap-1 text-orange-500" aria-label={`${review.rating} de 5 estrelas`}>
+                      {Array.from({ length: 5 }, (_, index) => <Star key={index} size={14} fill={index < review.rating ? 'currentColor' : 'none'} />)}
+                    </div>
+                    <blockquote className="mt-3 text-sm leading-relaxed text-gray-700">“{review.comment}”</blockquote>
+                    <p className="mt-4 text-xs font-semibold text-navy-900">{review.reviewer} · cliente</p>
+                    <p className="mt-1 text-xs text-gray-500">Sobre {review.professional} · {review.specialty}</p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-gray-600">
+                As avaliações reais aparecerão aqui à medida que clientes compartilharem suas experiências nos perfis.
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <CommunityFeed />
 
       {/* MODAL: CLIENTE PARTICULAR vs EMPRESA */}
       {modalTipo && (
@@ -893,4 +954,13 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
 
 
                     
+
+function ImpactMetric({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="rounded-2xl bg-navy-950 p-5 text-white sm:p-6">
+      <p className="font-display text-3xl font-extrabold text-orange-400">{value.toLocaleString('pt-BR')}</p>
+      <p className="mt-1 text-sm font-semibold">{label}</p>
+    </div>
+  );
+}
                     
