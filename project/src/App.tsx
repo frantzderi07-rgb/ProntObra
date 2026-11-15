@@ -12,6 +12,8 @@ import JobsPage from './pages/JobsPage';
 import JobDetailPage from './pages/JobDetailPage';
 import PostJobPage from './pages/PostJobPage';
 import DashboardPage from './pages/DashboardPage';
+import LearnPage from './pages/LearnPage';
+import AboutPage from './pages/AboutPage';
 
 function AppContent() {
   const { page } = useNav();
@@ -34,7 +36,13 @@ function AppContent() {
         console.warn('Aguardando configuração do Supabase:', err);
       }
     };
-    loadInitialData();
+    void loadInitialData();
+    window.addEventListener('prontobra:data-changed', loadInitialData);
+    window.addEventListener('storage', loadInitialData);
+    return () => {
+      window.removeEventListener('prontobra:data-changed', loadInitialData);
+      window.removeEventListener('storage', loadInitialData);
+    };
   }, []);
 
   const renderPage = () => {
@@ -53,6 +61,10 @@ function AppContent() {
         return <PostJobPage />;
       case 'dashboard':
         return <DashboardPage />;
+      case 'learn':
+        return <LearnPage />;
+      case 'about':
+        return <AboutPage />;
       default:
         return <HomePage professionals={professionals} jobs={jobs} />;
     }

@@ -3,9 +3,12 @@ import { ArrowLeft, CheckCircle2, Briefcase, Lock } from 'lucide-react';
 import { useNav } from '@/lib/nav';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
-import { ALL_CITIES, SPECIALTIES, CONTRACT_TYPE_LABELS } from '@/lib/types';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { BRAZIL_STATES, SPECIALTIES, CONTRACT_TYPE_LABELS } from '@/lib/types';
+import { saveLocalJob } from '@/lib/localStore';
 import type { ContractType } from '@/lib/types';
 import AuthModal from '@/components/AuthModal';
+import CitySelectorSpMs from '@/components/CitySelectorSpMs';
 
 export default function PostJobPage() {
   const { navigate } = useNav();
@@ -15,8 +18,8 @@ export default function PostJobPage() {
     title: '',
     description: '',
     specialty: SPECIALTIES[0],
-    city: ALL_CITIES[0],
-    state: 'SP',
+    city: '',
+    state: '',
     contract_type: 'empreitada' as ContractType,
     deadline: '',
     company_name: '',
@@ -24,42 +27,61 @@ export default function PostJobPage() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [savedLocally, setSavedLocally] = useState(false);
 
   const update = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const cityStateMap: Record<string, string> = {};
-  ALL_CITIES.forEach((c) => {
-    const msCities = ['Três Lagoas', 'Brasilândia', 'Água Clara', 'Selvíria', 'Ribas do Rio Pardo'];
-    cityStateMap[c] = msCities.includes(c) ? 'MS' : 'SP';
-  });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setSubmitting(true);
-
-    const { error } = await supabase.from('jobs').insert({
+    const [cityName, cityState] = form.city.split(' - ');
+    const job = {
+      id: crypto.randomUUID(),
       user_id: user.id,
       company_name: form.company_name || profile?.full_name || 'Empresa',
       company_phone: form.company_phone,
       title: form.title,
       description: form.description,
       specialty: form.specialty,
-      city: form.city,
-      state: cityStateMap[form.city] || 'SP',
+      city: cityName,
+      state: cityState || form.state,
       contract_type: form.contract_type,
       deadline: form.deadline || null,
       status: 'open',
-    });
+      created_at: new Date().toISOString(),
+    } as const;
 
-    setSubmitting(false);
-    if (!error) {
-      setSubmitted(true);
-    } else {
-      alert('Erro ao publicar vaga: ' + error.message);
+    let persisted = false;
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('jobs').insert({
+          user_id: user.id,
+          company_name: job.company_name,
+          company_phone: job.company_phone,
+          title: job.title,
+          description: job.description,
+          specialty: job.specialty,
+          city: job.city,
+          state: job.state,
+          contract_type: job.contract_type,
+          deadline: job.deadline,
+          status: job.status,
+        });
+        if (error) throw error;
+        persisted = true;
+      } catch (error) {
+        console.warn('Não foi possível publicar online; salvando a vaga neste dispositivo:', error);
+      }
     }
+    if (!persisted) {
+      saveLocalJob(job);
+      setSavedLocally(true);
+    }
+    setSubmitting(false);
+    setSubmitted(true);
   };
 
   if (submitted) {
@@ -68,7 +90,10 @@ export default function PostJobPage() {
         <div className="card max-w-lg p-8 text-center">
           <CheckCircle2 size={56} className="mx-auto text-green-500" />
           <h2 className="mt-4 font-display text-xl font-bold text-navy-900">Vaga publicada com sucesso!</h2>
-          <p className="mt-2 text-sm text-gray-500">Sua vaga já está visível no mural para os profissionais da região se candidatarem.</p>
+          <p className="mt-2 text-sm text-gray-500">
+            Sua vaga já está visível no mural para profissionais de {savedLocally ? 'todo o Brasil' : 'sua região'}.
+            {savedLocally ? ' Ela foi salva neste dispositivo e ficará disponível nesta sessão.' : ''}
+          </p>
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <button onClick={() => navigate({ name: 'jobs' })} className="btn-primary">Ver no mural</button>
             <button onClick={() => navigate({ name: 'dashboard' })} className="btn-outline">Ir para o painel</button>
@@ -89,7 +114,7 @@ export default function PostJobPage() {
       <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-6">
           <h1 className="font-display text-2xl font-bold text-navy-900">Publicar Vaga ou Pedido de Orçamento</h1>
-          <p className="mt-1 text-sm text-gray-500">Encontre o profissional certo para seu projeto na região de Andradina e Três Lagoas.</p>
+          <p className="mt-1 text-sm text-gray-500">Encontre o profissional certo para seu projeto em todo o Brasil.</p>
         </div>
 
         {!user ? (
@@ -159,12 +184,23 @@ export default function PostJobPage() {
 
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-navy-700">Cidade</label>
-                <select
+                <CitySelectorSpMs
                   value={form.city}
-                  onChange={(e) => update('city', e.target.value)}
-                  className="input-field"
-                >
-                  {ALL_CITIES.map((c) => <option key={c} value={c}>{c} — {cityStateMap[c]}</option>)}
+                  onChange={(location) => {
+                    const [, state] = location.split(' - ');
+                    setForm((prev) => ({ ...prev, city: location, state: state || prev.state }));
+                  }}
+                  stateFilter={form.state}
+                  required
+                  placeholder="Busque uma cidade..."
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-navy-700">Estado (UF)</label>
+                <select required value={form.state} onChange={(e) => setForm((prev) => ({ ...prev, state: e.target.value, city: '' }))} className="input-field">
+                  <option value="">Selecione o estado</option>
+                  {BRAZIL_STATES.map(([uf, name]) => <option key={uf} value={uf}>{name} ({uf})</option>)}
                 </select>
               </div>
 

@@ -7,6 +7,8 @@ export type Page =
   | { name: 'jobs' }
   | { name: 'job-detail'; id: string }
   | { name: 'post-job' }
+  | { name: 'learn' }
+  | { name: 'about' }
   | { name: 'dashboard' };
 
 interface NavContextValue {

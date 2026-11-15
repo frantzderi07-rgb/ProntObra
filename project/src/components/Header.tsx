@@ -7,7 +7,7 @@ import Logo from './Logo';
 import AuthModal from './AuthModal';
 
 export default function Header() {
-  const { user, profile, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const { page, navigate } = useNav();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -44,6 +44,8 @@ export default function Header() {
             {navLink('Início', page.name === 'home', () => navigate({ name: 'home' }))}
             {navLink('Profissionais', page.name === 'professionals', () => navigate({ name: 'professionals' }))}
             {navLink('Vagas', page.name === 'jobs' || page.name === 'job-detail', () => navigate({ name: 'jobs' }))}
+            {navLink('Aprender', page.name === 'learn', () => navigate({ name: 'learn' }))}
+            {navLink('Sobre Nós', page.name === 'about', () => navigate({ name: 'about' }))}
             {navLink('Publicar Vaga', page.name === 'post-job', () => navigate({ name: 'post-job' }))}
           </nav>
 
@@ -89,6 +91,8 @@ export default function Header() {
               {navLink('Início', page.name === 'home', () => navigate({ name: 'home' }))}
               {navLink('Profissionais', page.name === 'professionals', () => navigate({ name: 'professionals' }))}
               {navLink('Vagas', page.name === 'jobs', () => navigate({ name: 'jobs' }))}
+              {navLink('Aprender', page.name === 'learn', () => navigate({ name: 'learn' }))}
+              {navLink('Sobre Nós', page.name === 'about', () => navigate({ name: 'about' }))}
               {navLink('Publicar Vaga', page.name === 'post-job', () => navigate({ name: 'post-job' }))}
               {user && navLink('Painel', page.name === 'dashboard', () => navigate({ name: 'dashboard' }))}
               <div className="mt-2 border-t border-gray-100 pt-3">

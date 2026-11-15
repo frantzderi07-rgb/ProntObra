@@ -1,28 +1,30 @@
 import { useState, useEffect } from 'react';
-import { Search, X, Briefcase, Plus } from 'lucide-react';
+import { X, Briefcase, Plus } from 'lucide-react';
 import { useNav } from '@/lib/nav';
-import { ALL_CITIES, SPECIALTIES } from '@/lib/types';
+import { BRAZIL_STATES, SPECIALTIES } from '@/lib/types';
 import type { Job } from '@/lib/types';
 import { fetchJobs } from '@/lib/queries';
 import JobCard from '@/components/JobCard';
+import CitySelectorSpMs from '@/components/CitySelectorSpMs';
 
 export default function JobsPage() {
   const { navigate } = useNav();
   const [specialty, setSpecialty] = useState('all');
-  const [city, setCity] = useState('all');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    fetchJobs({ specialty, city })
+    fetchJobs({ specialty, city: city || 'all', state })
       .then(setJobs)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [specialty, city]);
+  }, [specialty, city, state]);
 
-  const activeFilters = (specialty !== 'all' ? 1 : 0) + (city !== 'all' ? 1 : 0);
-  const clearFilters = () => { setSpecialty('all'); setCity('all'); };
+  const activeFilters = (specialty !== 'all' ? 1 : 0) + (city ? 1 : 0) + (state ? 1 : 0);
+  const clearFilters = () => { setSpecialty('all'); setCity(''); setState(''); };
 
   return (
     <div className="min-h-screen bg-gray-50 animate-fade-in">
@@ -31,7 +33,7 @@ export default function JobsPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">Mural de Vagas e Orçamentos</h1>
-              <p className="mt-1 text-white/70">Oportunidades de trabalho e pedidos de reforma na região</p>
+              <p className="mt-1 text-white/70">Oportunidades de trabalho e pedidos de reforma em todo o Brasil.</p>
             </div>
             <button onClick={() => navigate({ name: 'post-job' })} className="btn-primary self-start">
               <Plus size={18} /> Publicar Vaga
@@ -42,15 +44,16 @@ export default function JobsPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="flex flex-1 flex-col gap-3 sm:flex-row">
+          <div className="grid flex-1 gap-3 sm:grid-cols-3">
             <select value={specialty} onChange={(e) => setSpecialty(e.target.value)} className="input-field flex-1">
               <option value="all">Todas as especialidades</option>
               {SPECIALTIES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <select value={city} onChange={(e) => setCity(e.target.value)} className="input-field flex-1">
-              <option value="all">Todas as cidades</option>
-              {ALL_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            <select value={state} onChange={(e) => { setState(e.target.value); setCity(''); }} className="input-field flex-1" aria-label="Filtrar por estado">
+              <option value="">Todos os estados</option>
+              {BRAZIL_STATES.map(([uf, name]) => <option key={uf} value={uf}>{name} ({uf})</option>)}
             </select>
+            <CitySelectorSpMs value={city} onChange={setCity} stateFilter={state} placeholder="Todas as cidades" />
           </div>
           {activeFilters > 0 && (
             <button onClick={clearFilters} className="btn-ghost">

@@ -1,7 +1,9 @@
-import { MapPin, Briefcase, MessageCircle, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin, Briefcase, MessageCircle, FileText, ShieldCheck, Award, UserRound } from 'lucide-react';
 import { useNav } from '@/lib/nav';
 import type { ProfessionalWithStats } from '@/lib/types';
 import StarRating from './StarRating';
+import QuickContactModal from './QuickContactModal';
 
 interface ProfessionalCardProps {
   professional: ProfessionalWithStats;
@@ -9,6 +11,7 @@ interface ProfessionalCardProps {
 
 export default function ProfessionalCard({ professional: p }: ProfessionalCardProps) {
   const { navigate } = useNav();
+  const [contactOpen, setContactOpen] = useState(false);
   const coverPhoto = p.portfolio_photos?.[0]?.image_url;
 
   return (
@@ -30,23 +33,31 @@ export default function ProfessionalCard({ professional: p }: ProfessionalCardPr
           </span>
         )}
         <span className="badge absolute right-3 top-3 bg-white/90 text-navy-800">
-          {p.specialty}
+          {p.specialty || 'Construção Civil'}
+        </span>
+        <span className={`badge absolute bottom-3 left-3 ${p.is_available === false ? 'bg-gray-700 text-white' : 'bg-green-600 text-white'}`}>
+          {p.is_available === false ? 'Agenda ocupada' : 'Disponível Agora'}
         </span>
       </div>
 
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start gap-3">
-          <img
-            src={p.avatar_url ?? ''}
-            alt={p.full_name}
-            className="h-12 w-12 -mt-8 flex-shrink-0 rounded-xl border-4 border-white object-cover shadow-md bg-navy-100"
-            loading="lazy"
-          />
+          {p.avatar_url ? (
+            <img src={p.avatar_url} alt={p.full_name} className="h-12 w-12 -mt-8 flex-shrink-0 rounded-xl border-4 border-white object-cover shadow-md bg-navy-100" loading="lazy" />
+          ) : (
+            <div className="flex h-12 w-12 -mt-8 flex-shrink-0 items-center justify-center rounded-xl border-4 border-white bg-navy-100 text-navy-600 shadow-md" aria-label="Foto não cadastrada">
+              <UserRound size={20} />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <h3 className="truncate font-display text-base font-bold text-navy-900">{p.full_name}</h3>
             <p className="flex items-center gap-1 text-xs text-gray-500">
               <MapPin size={12} /> {p.city} — {p.state}
             </p>
+            <div className="mt-1 flex flex-wrap gap-1">
+              <span className="badge bg-blue-50 !px-2 !py-0.5 text-blue-700"><ShieldCheck size={11} /> Verificado</span>
+              {!!p.certifications?.length && <span className="badge bg-amber-50 !px-2 !py-0.5 text-amber-700"><Award size={11} /> Certificado</span>}
+            </div>
           </div>
         </div>
 
@@ -57,7 +68,7 @@ export default function ProfessionalCard({ professional: p }: ProfessionalCardPr
             <span className="text-xs text-gray-400">Sem avaliações</span>
           )}
           <span className="text-xs font-semibold text-navy-600">
-            {p.experience_years} anos exp.
+            {p.experience_years ?? 0} anos de experiência
           </span>
         </div>
 
@@ -76,6 +87,9 @@ export default function ProfessionalCard({ professional: p }: ProfessionalCardPr
           >
             <FileText size={14} /> Ver Perfil
           </button>
+          <button type="button" onClick={() => setContactOpen(true)} className="btn-outline !px-3 !py-2 !text-xs" aria-label={`Contato direto com ${p.full_name}`}>
+            <MessageCircle size={14} /> Contato
+          </button>
           {p.phone && (
             <a
               href={`https://wa.me/55${p.phone.replace(/\D/g, '')}`}
@@ -88,6 +102,7 @@ export default function ProfessionalCard({ professional: p }: ProfessionalCardPr
           )}
         </div>
       </div>
+      <QuickContactModal professional={p} open={contactOpen} onClose={() => setContactOpen(false)} />
     </div>
   );
 }

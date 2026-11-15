@@ -1,6 +1,5 @@
-import { HardHat, Mail, Phone, MapPin } from 'lucide-react';
+import { HardHat, Mail, Phone, MapPin, GraduationCap } from 'lucide-react';
 import { useNav } from '@/lib/nav';
-import { ALL_CITIES } from '@/lib/types';
 
 export default function Footer() {
   const { navigate } = useNav();
@@ -20,7 +19,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="mt-4 text-sm text-white/70">
-              A plataforma que conecta profissionais da construção civil a clientes e empresas em Andradina (SP) e região, incluindo o Mato Grosso do Sul.
+              A plataforma que conecta profissionais da construção civil a clientes e empresas em todo o Brasil.
             </p>
           </div>
 
@@ -30,19 +29,15 @@ export default function Footer() {
               <li><button onClick={() => navigate({ name: 'home' })} className="hover:text-orange-400">Início</button></li>
               <li><button onClick={() => navigate({ name: 'professionals' })} className="hover:text-orange-400">Profissionais</button></li>
               <li><button onClick={() => navigate({ name: 'jobs' })} className="hover:text-orange-400">Vagas</button></li>
+              <li><button onClick={() => navigate({ name: 'learn' })} className="inline-flex items-center gap-1 hover:text-orange-400"><GraduationCap size={14} /> Para Aprender</button></li>
+              <li><button onClick={() => navigate({ name: 'about' })} className="hover:text-orange-400">Sobre Nós</button></li>
               <li><button onClick={() => navigate({ name: 'post-job' })} className="hover:text-orange-400">Publicar Vaga</button></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="mb-3 text-sm font-semibold text-white">Região de Atendimento</h4>
-            <ul className="space-y-1.5 text-sm text-white/70">
-              <li className="flex items-center gap-1.5"><MapPin size={14} className="text-orange-500" /> Andradina — SP</li>
-              <li className="flex items-center gap-1.5"><MapPin size={14} className="text-orange-500" /> Três Lagoas — MS</li>
-              <li className="flex items-center gap-1.5"><MapPin size={14} className="text-orange-500" /> Castilho — SP</li>
-              <li className="flex items-center gap-1.5"><MapPin size={14} className="text-orange-500" /> Ilha Solteira — SP</li>
-              <li className="text-xs text-white/50">+ {ALL_CITIES.length - 4} cidades da região</li>
-            </ul>
+            <h4 className="mb-3 text-sm font-semibold text-white">Atuação</h4>
+            <p className="flex items-start gap-2 text-sm text-white/70"><MapPin size={16} className="mt-0.5 shrink-0 text-orange-500" /> Profissionais, clientes e empresas de todo o Brasil.</p>
           </div>
 
           <div>

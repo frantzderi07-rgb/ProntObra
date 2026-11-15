@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { User as UserIcon, Briefcase, FileText, Image as ImageIcon, Phone, MessageCircle, Plus, Trash2, Check, X, Clock, Star } from 'lucide-react';
+import { User as UserIcon, Briefcase, FileText, Image as ImageIcon, MessageCircle, Plus, Trash2, Check, X, Clock } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useNav } from '@/lib/nav';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { fetchJobsByUser, fetchApplicationsForJob, fetchApplicationsByUser } from '@/lib/queries';
-import { ALL_CITIES, SPECIALTIES, CONTRACT_TYPE_LABELS, APPLICATION_STATUS_LABELS } from '@/lib/types';
+import { BRAZIL_STATES, SPECIALTIES, CONTRACT_TYPE_LABELS, APPLICATION_STATUS_LABELS } from '@/lib/types';
+import { addLocalPortfolioPhoto, removeLocalPortfolioPhoto, updateLocalProfile } from '@/lib/localStore';
 import type { Job, Application, Profile, PortfolioPhoto } from '@/lib/types';
+import CitySelectorSpMs from '@/components/CitySelectorSpMs';
 
 const statusBadgeColors: Record<string, string> = {
   pending: 'bg-gold-50 text-gold-700',
@@ -22,8 +24,9 @@ export default function DashboardPage() {
   const [portfolioPhotos, setPortfolioPhotos] = useState<PortfolioPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingProfile, setEditingProfile] = useState(false);
-  const [editForm, setEditForm] = useState({ full_name: '', specialty: '', city: '', experience_years: 0, phone: '', bio: '', service_radius: '', avatar_url: '' });
+  const [editForm, setEditForm] = useState({ full_name: '', specialty: '', city: '', state: '', experience_years: 0, phone: '', bio: '', service_radius: '', avatar_url: '' });
   const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState('');
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [newPhotoCaption, setNewPhotoCaption] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'profile' | 'portfolio' | 'applications' | 'jobs'>('overview');
@@ -50,10 +53,17 @@ export default function DashboardPage() {
         setMyApplications(apps);
         setLoading(false);
       });
-      if (profile.id) {
+      if (profile.id && isSupabaseConfigured) {
         supabase.from('portfolio_photos').select('*').eq('profile_id', profile.id).order('created_at', { ascending: false })
-          .then(({ data }) => setPortfolioPhotos((data as PortfolioPhoto[]) ?? []));
+          .then(({ data, error }) => {
+            if (error) console.error('Não foi possível carregar o portfólio:', error);
+            else setPortfolioPhotos((data as PortfolioPhoto[]) ?? []);
+          });
+      } else {
+        setPortfolioPhotos((profile as Profile & { portfolio_photos?: PortfolioPhoto[] }).portfolio_photos ?? []);
       }
+    } else {
+      setLoading(false);
     }
 
     if (profile) {
@@ -61,6 +71,7 @@ export default function DashboardPage() {
         full_name: profile.full_name,
         specialty: profile.specialty ?? '',
         city: profile.city,
+        state: profile.state,
         experience_years: profile.experience_years ?? 0,
         phone: profile.phone ?? '',
         bio: profile.bio ?? '',
@@ -81,40 +92,71 @@ export default function DashboardPage() {
 
   const handleSaveProfile = async () => {
     setSavingProfile(true);
-    const { error } = await supabase.from('profiles').update({
+    const [city, cityState] = editForm.city.split(' - ');
+    const updates = {
       full_name: editForm.full_name,
       specialty: editForm.specialty,
-      city: editForm.city,
+      city,
+      state: cityState || editForm.state,
       experience_years: editForm.experience_years,
       phone: editForm.phone,
       bio: editForm.bio,
       service_radius: editForm.service_radius,
       avatar_url: editForm.avatar_url,
-    }).eq('id', profile.id);
-    setSavingProfile(false);
-    if (!error) {
-      setEditingProfile(false);
-      await refreshProfile();
+    };
+    let savedRemotely = false;
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('profiles').update(updates).eq('id', profile.id);
+        if (error) throw error;
+        savedRemotely = true;
+      } catch (error) {
+        console.warn('Não foi possível salvar o perfil online; salvando neste dispositivo:', error);
+      }
     }
+    if (!savedRemotely) updateLocalProfile(profile.id, updates);
+    setSavingProfile(false);
+    setProfileMessage(savedRemotely ? 'Perfil atualizado.' : 'Perfil salvo neste dispositivo.');
+    setEditingProfile(false);
+    await refreshProfile();
   };
 
   const handleAddPhoto = async () => {
     if (!newPhotoUrl || !profile) return;
-    const { data } = await supabase.from('portfolio_photos').insert({
-      profile_id: profile.id,
-      image_url: newPhotoUrl,
-      caption: newPhotoCaption || null,
-    }).select().single();
-    if (data) {
-      setPortfolioPhotos((prev) => [data as PortfolioPhoto, ...prev]);
-      setNewPhotoUrl('');
-      setNewPhotoCaption('');
+    let photo: PortfolioPhoto | null = null;
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.from('portfolio_photos').insert({
+          profile_id: profile.id,
+          image_url: newPhotoUrl,
+          caption: newPhotoCaption || null,
+        }).select().single();
+        if (error) throw error;
+        photo = data as PortfolioPhoto;
+      } catch (error) {
+        console.warn('Não foi possível salvar a foto online; salvando neste dispositivo:', error);
+      }
     }
+    if (!photo) photo = addLocalPortfolioPhoto(profile.id, newPhotoUrl, newPhotoCaption);
+    setPortfolioPhotos((prev) => [photo as PortfolioPhoto, ...prev]);
+    setNewPhotoUrl('');
+    setNewPhotoCaption('');
+    await refreshProfile();
   };
 
   const handleDeletePhoto = async (photoId: string) => {
-    await supabase.from('portfolio_photos').delete().eq('id', photoId);
+    if (isSupabaseConfigured) {
+      const { error } = await supabase.from('portfolio_photos').delete().eq('id', photoId);
+      if (error) console.error('Não foi possível excluir a foto online:', error);
+    } else {
+      removeLocalPortfolioPhoto(profile.id, photoId);
+    }
     setPortfolioPhotos((prev) => prev.filter((p) => p.id !== photoId));
+  };
+
+  const toggleAvailability = async () => {
+    updateLocalProfile(profile.id, { is_available: profile.is_available === false });
+    await refreshProfile();
   };
 
   const handleUpdateApplicationStatus = async (appId: string, status: 'accepted' | 'rejected') => {
@@ -154,13 +196,24 @@ export default function DashboardPage() {
       <div className="bg-navy-900 py-8">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
-            <img src={profile.avatar_url ?? ''} alt={profile.full_name} className="h-16 w-16 rounded-2xl border-2 border-white/20 object-cover bg-navy-700" />
+            {profile.avatar_url
+              ? <img src={profile.avatar_url} alt={profile.full_name} className="h-16 w-16 rounded-2xl border-2 border-white/20 object-cover bg-navy-700" />
+              : <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-white/20 bg-navy-700 text-xl font-bold text-white">{profile.full_name.slice(0, 1).toUpperCase()}</div>}
             <div>
               <h1 className="font-display text-xl font-bold text-white">{profile.full_name}</h1>
               <p className="text-white/60 text-sm">
-                {isProfessional ? `${profile.specialty} · ${profile.city}/${profile.state}` : 'Conta Empresarial'}
+                {isProfessional ? `${profile.specialty} · ${profile.city}/${profile.state}` : profile.user_type === 'company' ? 'Conta Empresarial' : 'Conta de Cliente'}
               </p>
             </div>
+            {isProfessional && (
+              <button
+                type="button"
+                onClick={() => void toggleAvailability()}
+                className={`ml-auto rounded-xl px-3 py-2 text-xs font-semibold transition ${profile.is_available === false ? 'bg-white/10 text-white' : 'bg-green-500/20 text-green-200'}`}
+              >
+                {profile.is_available === false ? 'Agenda ocupada · Ativar disponibilidade' : 'Disponível Agora · Agenda Livre'}
+              </button>
+            )}
             <button onClick={signOut} className="ml-auto btn-ghost text-white hover:bg-white/10">
               Sair
             </button>
@@ -230,6 +283,7 @@ export default function DashboardPage() {
             {/* PROFILE (edit) */}
             {activeTab === 'profile' && (
               <div className="card p-6 sm:p-8">
+                {profileMessage && <p role="status" className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">{profileMessage}</p>}
                 <div className="flex items-center justify-between">
                   <h2 className="font-display text-lg font-bold text-navy-900">{isProfessional ? 'Editar Perfil' : 'Dados da Empresa'}</h2>
                   {!editingProfile && <button onClick={() => setEditingProfile(true)} className="btn-outline !text-xs">Editar</button>}
@@ -262,8 +316,21 @@ export default function DashboardPage() {
                       )}
                       <div>
                         <label className="mb-1 block text-sm font-medium text-navy-700">Cidade</label>
-                        <select className="input-field" value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}>
-                          {ALL_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                        <CitySelectorSpMs
+                          value={editForm.city}
+                          onChange={(location) => {
+                            const [, state] = location.split(' - ');
+                            setEditForm((prev) => ({ ...prev, city: location, state: state || prev.state }));
+                          }}
+                          stateFilter={editForm.state}
+                          placeholder="Busque sua cidade..."
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-navy-700">Estado (UF)</label>
+                        <select className="input-field" value={editForm.state} onChange={(e) => setEditForm((prev) => ({ ...prev, state: e.target.value, city: '' }))}>
+                          <option value="">Selecione o estado</option>
+                          {BRAZIL_STATES.map(([uf, name]) => <option key={uf} value={uf}>{name} ({uf})</option>)}
                         </select>
                       </div>
                       {isProfessional && (

@@ -1,4 +1,4 @@
-export type UserType = 'professional' | 'company';
+export type UserType = 'professional' | 'company' | 'client';
 
 export type ContractType = 'diaria' | 'empreitada' | 'clt';
 
@@ -22,6 +22,9 @@ export interface Profile {
   bio: string | null;
   is_featured: boolean;
   created_at: string;
+  is_available?: boolean;
+  certifications?: string[];
+  company_cnpj?: string | null;
 }
 
 export interface PortfolioPhoto {
@@ -97,6 +100,16 @@ export const CITIES_MS = [
 ];
 
 export const ALL_CITIES = [...CITIES_SP, ...CITIES_MS].sort();
+
+export const BRAZIL_STATES = [
+  ['AC', 'Acre'], ['AL', 'Alagoas'], ['AP', 'Amapá'], ['AM', 'Amazonas'],
+  ['BA', 'Bahia'], ['CE', 'Ceará'], ['DF', 'Distrito Federal'], ['ES', 'Espírito Santo'],
+  ['GO', 'Goiás'], ['MA', 'Maranhão'], ['MT', 'Mato Grosso'], ['MS', 'Mato Grosso do Sul'],
+  ['MG', 'Minas Gerais'], ['PA', 'Pará'], ['PB', 'Paraíba'], ['PR', 'Paraná'],
+  ['PE', 'Pernambuco'], ['PI', 'Piauí'], ['RJ', 'Rio de Janeiro'], ['RN', 'Rio Grande do Norte'],
+  ['RS', 'Rio Grande do Sul'], ['RO', 'Rondônia'], ['RR', 'Roraima'], ['SC', 'Santa Catarina'],
+  ['SP', 'São Paulo'], ['SE', 'Sergipe'], ['TO', 'Tocantins'],
+] as const;
 
 export const SPECIALTIES = [
   'Pedreiro',

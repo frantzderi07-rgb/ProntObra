@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, MapPin, Briefcase, Clock, MessageCircle, Mail, Star, Image as ImageIcon, Send } from 'lucide-react';
+import { ArrowLeft, MapPin, Briefcase, Clock, MessageCircle, Mail, Star, Image as ImageIcon, X, ShieldCheck, Award, ThumbsUp } from 'lucide-react';
 import { useNav } from '@/lib/nav';
 import { fetchProfessionalById } from '@/lib/queries';
 import type { ProfessionalWithStats } from '@/lib/types';
 import StarRating from '@/components/StarRating';
+import QuickContactModal from '@/components/QuickContactModal';
+import { getPhotoReactions, savePhotoReaction } from '@/lib/localStore';
 
 interface ProfessionalDetailPageProps {
   id: string;
@@ -14,6 +16,8 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
   const [professional, setProfessional] = useState<ProfessionalWithStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [reactions, setReactions] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     setLoading(true);
@@ -22,6 +26,24 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!professional) return;
+    setReactions(Object.fromEntries(professional.portfolio_photos.map((photo) => [photo.id, getPhotoReactions(photo.id)])));
+  }, [professional]);
+
+  useEffect(() => {
+    const syncReactions = () => {
+      if (!professional) return;
+      setReactions(Object.fromEntries(professional.portfolio_photos.map((photo) => [photo.id, getPhotoReactions(photo.id)])));
+    };
+    window.addEventListener('prontobra:data-changed', syncReactions);
+    window.addEventListener('storage', syncReactions);
+    return () => {
+      window.removeEventListener('prontobra:data-changed', syncReactions);
+      window.removeEventListener('storage', syncReactions);
+    };
+  }, [professional]);
 
   if (loading) {
     return (
@@ -59,17 +81,22 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
           <div className="px-6 pb-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-end gap-4">
-                <img
-                  src={p.avatar_url ?? ''}
-                  alt={p.full_name}
-                  className="h-24 w-24 -mt-12 rounded-2xl border-4 border-white object-cover shadow-lg bg-navy-100"
-                />
+                {p.avatar_url
+                  ? <img src={p.avatar_url} alt={p.full_name} className="h-24 w-24 -mt-12 rounded-2xl border-4 border-white object-cover shadow-lg bg-navy-100" />
+                  : <div className="flex h-24 w-24 -mt-12 items-center justify-center rounded-2xl border-4 border-white bg-navy-100 text-navy-600 shadow-lg"><span className="text-2xl font-bold">{p.full_name.slice(0, 1).toUpperCase()}</span></div>}
                 <div>
                   <h1 className="font-display text-xl font-bold text-navy-900">{p.full_name}</h1>
                   <p className="text-orange-600 font-semibold text-sm">{p.specialty}</p>
                   <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-500">
                     <span className="flex items-center gap-1"><MapPin size={12} /> {p.city} — {p.state}</span>
                     <span className="flex items-center gap-1"><Clock size={12} /> {p.experience_years} anos de experiência</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="badge bg-blue-50 text-blue-700"><ShieldCheck size={13} /> Verificado</span>
+                    {!!p.certifications?.length && <span className="badge bg-amber-50 text-amber-700"><Award size={13} /> Profissional Certificado</span>}
+                    <span className={`badge ${p.is_available === false ? 'bg-gray-100 text-gray-700' : 'bg-green-50 text-green-700'}`}>
+                      {p.is_available === false ? 'Agenda ocupada' : 'Disponível Agora · Agenda Livre'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -102,23 +129,34 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
             {/* Portfolio */}
             <div className="card p-6">
               <h2 className="flex items-center gap-2 font-display text-lg font-bold text-navy-900">
-                <ImageIcon size={20} className="text-orange-500" /> Portfólio de Obras
+                <ImageIcon size={20} className="text-orange-500" /> Obras Concluídas / Antes e Depois
               </h2>
               {p.portfolio_photos.length > 0 ? (
-                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {p.portfolio_photos.map((photo) => (
-                    <button
-                      key={photo.id}
-                      onClick={() => setLightbox(photo.image_url)}
-                      className="group relative aspect-square overflow-hidden rounded-xl bg-gray-100"
-                    >
-                      <img src={photo.image_url} alt={photo.caption ?? 'Portfólio'} className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
-                      {photo.caption && (
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
-                          <p className="text-[10px] text-white line-clamp-2">{photo.caption}</p>
-                        </div>
-                      )}
-                    </button>
+                    <article key={photo.id} className="overflow-hidden rounded-xl border border-gray-100">
+                      <button type="button" onClick={() => setLightbox(photo.image_url)} className="group relative block aspect-video w-full overflow-hidden bg-gray-100">
+                        <img src={photo.image_url} alt={photo.caption ?? 'Obra concluída'} className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
+                        {photo.caption && <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-left text-xs text-white">{photo.caption}</span>}
+                      </button>
+                      <div className="grid grid-cols-1 gap-2 p-3">
+                        {['Acabamento Perfeito', 'No Prazo', 'Recomendo'].map((reaction) => {
+                          const active = reactions[photo.id]?.includes(reaction) ?? false;
+                          return (
+                            <button
+                              key={reaction}
+                              type="button"
+                              aria-pressed={active}
+                              onClick={() => setReactions((current) => ({ ...current, [photo.id]: savePhotoReaction(photo.id, reaction) }))}
+                              className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold transition ${active ? 'bg-orange-50 text-orange-700' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
+                            >
+                              <span className="flex items-center gap-1.5"><ThumbsUp size={13} /> {reaction}</span>
+                              <span>{reactions[photo.id]?.filter((item) => item === reaction).length ?? 0}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </article>
                   ))}
                 </div>
               ) : (
@@ -156,6 +194,9 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
               <p className="mt-1 text-sm text-gray-500">Solicite um orçamento diretamente com o profissional.</p>
 
               <div className="mt-4 space-y-3">
+                <button type="button" onClick={() => setContactOpen(true)} className="btn-secondary w-full">
+                  <MessageCircle size={18} /> Contato Direto / Chat Rápido
+                </button>
                 {waLink && (
                   <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn-primary w-full">
                     <MessageCircle size={18} /> WhatsApp
@@ -198,12 +239,12 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
       {lightbox && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 animate-fade-in" onClick={() => setLightbox(null)}>
           <img src={lightbox} alt="Portfólio ampliado" className="max-h-full max-w-full rounded-lg object-contain" />
-          <button className="absolute right-4 top-4 text-white/70 hover:text-white" onClick={() => setLightbox(null)}>
-            <Send size={0} className="hidden" />
-            <span className="text-2xl">&times;</span>
+          <button className="absolute right-4 top-4 rounded-full bg-black/40 p-2 text-white/70 hover:text-white" aria-label="Fechar imagem" onClick={() => setLightbox(null)}>
+            <X size={24} />
           </button>
         </div>
       )}
+      <QuickContactModal professional={p} open={contactOpen} onClose={() => setContactOpen(false)} />
     </div>
   );
 }

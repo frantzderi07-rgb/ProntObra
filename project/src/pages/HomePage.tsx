@@ -18,12 +18,36 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useNav } from '../lib/nav';
+import { BRAZIL_STATES } from '../lib/types';
 import type { Job, ProfessionalWithStats } from '../lib/types';
 import CitySelectorSpMs from '../components/CitySelectorSpMs';
+import ProfessionalCard from '../components/ProfessionalCard';
+import { saveLocalJob } from '../lib/localStore';
 
 interface HomePageProps {
   professionals?: ProfessionalWithStats[];
   jobs?: Job[];
+}
+
+interface HomeProfessional {
+  id: string;
+  nome: string;
+  especialidade: string;
+  cidade: string;
+  nota: number;
+  avaliacoes: number;
+  verificado: boolean;
+  profile?: ProfessionalWithStats;
+}
+
+interface BudgetRequestPreview {
+  id: number;
+  tipo: string;
+  titulo: string;
+  autor: string;
+  cidade: string;
+  detalhe: string;
+  contato: string;
 }
 
 const slidesHero = [
@@ -50,7 +74,7 @@ const slidesHero = [
   },
 ];
 
-export default function HomePage({ professionals = [], jobs = [] }: HomePageProps) {
+export default function HomePage({ professionals = [] }: HomePageProps) {
   const { navigate } = useNav();
   const [slideAtual, setSlideAtual] = useState(0);
   const [pausado, setPausado] = useState(false);
@@ -73,11 +97,12 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
     return () => window.clearInterval(intervalo);
   }, [pausado]);
 
-  // Filtro de cidade SP / MS
+  // Filtros de localização em todo o Brasil
   const [cidadeFiltro, setCidadeFiltro] = useState('');
+  const [estadoFiltro, setEstadoFiltro] = useState('');
   const [especialidadeFiltro, setEspecialidadeFiltro] = useState('');
 
-  // Controle dos modais (Cliente Particular vs Empresa)
+  // Controle do modal de orçamento rápido
   const [modalTipo, setModalTipo] = useState<'cliente' | 'empresa' | null>(null);
   const [enviado, setEnviado] = useState(false);
 
@@ -103,7 +128,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
   });
 
   // Lista extra criada na sessão
-  const [pedidosExtras, setPedidosExtras] = useState<any[]>([]);
+  const [pedidosExtras, setPedidosExtras] = useState<BudgetRequestPreview[]>([]);
 
   const formatarCNPJ = (valor: string) => {
     const nums = valor.replace(/\D/g, '').slice(0, 14);
@@ -126,13 +151,29 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
   const handleEnviar = (e: React.FormEvent) => {
     e.preventDefault();
     if (modalTipo === 'cliente') {
+      const location = clienteForm.cidade.split(' - ');
+      saveLocalJob({
+        id: crypto.randomUUID(),
+        user_id: null,
+        company_name: clienteForm.nome,
+        company_phone: clienteForm.whatsapp,
+        title: `Orçamento: ${clienteForm.especialidade}`,
+        description: clienteForm.descricao,
+        specialty: clienteForm.especialidade,
+        city: location[0] || clienteForm.cidade,
+        state: location[1] || estadoFiltro || 'SP',
+        contract_type: 'empreitada',
+        deadline: clienteForm.urgencia,
+        status: 'open',
+        created_at: new Date().toISOString(),
+      });
       setPedidosExtras((prev) => [
         {
           id: Date.now(),
           tipo: 'Cliente Particular',
           titulo: `Orçamento: ${clienteForm.especialidade}`,
           autor: clienteForm.nome,
-          cidade: clienteForm.cidade || 'SP / MS',
+          cidade: clienteForm.cidade || 'Todo o Brasil',
           detalhe: clienteForm.descricao,
           contato: clienteForm.whatsapp,
         },
@@ -145,7 +186,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
           tipo: 'Empresa Verificada',
           titulo: empresaForm.tituloVaga,
           autor: `${empresaForm.nomeEmpresa} (CNPJ: ${empresaForm.cnpj})`,
-          cidade: empresaForm.cidade || 'SP / MS',
+          cidade: empresaForm.cidade || 'Todo o Brasil',
           detalhe: `Responsável: ${empresaForm.responsavel} • Pagamento: ${empresaForm.pagamento}`,
           contato: empresaForm.whatsapp,
         },
@@ -155,16 +196,17 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
     setEnviado(true);
   };
 
-  const listaProfissionais =
+  const listaProfissionais: HomeProfessional[] =
     professionals.length > 0
-      ? professionals.slice(0, 6).map((p: any) => ({
+      ? professionals.slice(0, 6).map((p) => ({
           id: p.id,
-          nome: p.full_name || p.name || 'Profissional ProntObra',
+          nome: p.full_name || 'Profissional ProntObra',
           especialidade: p.specialty || 'Construção Civil',
-          cidade: p.city ? `${p.city} - ${p.state || 'SP'}` : 'Andradina - SP',
-          nota: p.avg_rating || 4.9,
-          avaliacoes: p.review_count || 18,
+          cidade: p.city ? `${p.city} - ${p.state || ''}` : '',
+          nota: p.avg_rating ?? 0,
+          avaliacoes: p.review_count ?? 0,
           verificado: true,
+          profile: p,
         }))
       : [
           {
@@ -200,11 +242,12 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
     const matchCidade =
       !cidadeFiltro ||
       prof.cidade.toLowerCase().includes(cidadeFiltro.toLowerCase());
+    const matchEstado = !estadoFiltro || prof.cidade.endsWith(`- ${estadoFiltro}`);
     const matchEsp =
       !especialidadeFiltro ||
       prof.especialidade.toLowerCase().includes(especialidadeFiltro.toLowerCase()) ||
       prof.nome.toLowerCase().includes(especialidadeFiltro.toLowerCase());
-    return matchCidade && matchEsp;
+    return matchCidade && matchEstado && matchEsp;
   });
 
   return (
@@ -230,7 +273,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
             <div className="space-y-6 lg:col-span-7">
               <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3.5 py-1.5 text-xs font-semibold text-orange-400">
                 <MapPin className="h-3.5 w-3.5 text-orange-500" />
-                Atendendo todas as cidades de São Paulo (SP) e Mato Grosso do Sul (MS)
+                Atendendo profissionais e clientes de todo o Brasil
               </div>
 
               <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
@@ -240,21 +283,33 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
 
               <p className="max-w-2xl text-base text-slate-300 sm:text-lg">
                 A ProntObra conecta pedreiros, eletricistas, pintores e mestres de obras
-                qualificados diretamente a clientes particulares e construtoras de SP e MS.
+                qualificados diretamente a clientes particulares e construtoras de todo o Brasil.
               </p>
 
-              {/* Barra de Busca por Cidade (SP / MS) e Especialidade */}
+              {/* Busca por estado, cidade e especialidade */}
               <div className="rounded-2xl border border-white/10 bg-[#0F172A]/80 p-3 backdrop-blur-md">
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-12">
-                  <div className="sm:col-span-6">
+                  <div className="sm:col-span-5">
                     <CitySelectorSpMs
                       value={cidadeFiltro}
                       onChange={setCidadeFiltro}
-                      placeholder="Selecione a cidade (SP ou MS)..."
+                      stateFilter={estadoFiltro}
+                      placeholder="Selecione uma cidade..."
                       dark
                     />
                   </div>
-                  <div className="sm:col-span-4">
+                  <div className="sm:col-span-2">
+                    <select
+                      value={estadoFiltro}
+                      onChange={(e) => { setEstadoFiltro(e.target.value); setCidadeFiltro(''); }}
+                      aria-label="Filtrar por estado"
+                      className="h-full w-full rounded-xl border border-white/15 bg-[#0F172A] px-3 py-2.5 text-sm text-white outline-none focus:border-orange-500"
+                    >
+                      <option value="">Todos os estados</option>
+                      {BRAZIL_STATES.map(([uf, name]) => <option key={uf} value={uf}>{uf} · {name}</option>)}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-3">
                     <input
                       type="text"
                       value={especialidadeFiltro}
@@ -432,11 +487,10 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
                   <UserCheck className="h-6 w-6" />
                 </div>
                 <h3 className="text-lg font-bold text-[#0F172A]">
-                  Para Clientes (Pessoa Física)
+                Para Clientes
                 </h3>
                 <p className="mt-2 text-sm text-slate-600">
-                  Precisa reformar, construir ou fazer um reparo em casa? Peça orçamentos
-                  sem precisar de CNPJ e fale direto com profissionais da sua cidade.
+                  Encontre o profissional ideal para sua obra ou reforma em qualquer cidade do Brasil.
                 </p>
               </div>
               <button
@@ -456,16 +510,15 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
                 </div>
                 <h3 className="text-lg font-bold text-[#0F172A]">Para Empresas</h3>
                 <p className="mt-2 text-sm text-slate-600">
-                  Construtoras, engenharias e comércios: cadastre sua empresa com CNPJ,
-                  defina a cidade da obra em SP ou MS e contrate equipes verificadas.
+                  Publique oportunidades e encontre as melhores equipes para seus projetos.
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => abrirModal('empresa')}
+                onClick={() => navigate({ name: 'post-job' })}
                 className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-orange-600"
               >
-                Cadastrar Empresa / Vaga
+                Publicar Vaga
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
@@ -476,19 +529,18 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
                   <GraduationCap className="h-6 w-6" />
                 </div>
                 <h3 className="text-lg font-bold text-[#0F172A]">
-                  Para Profissionais & Capacitação
+                  Para Aprender
                 </h3>
                 <p className="mt-2 text-sm text-slate-600">
-                  Crie seu perfil profissional gratuito, receba chamadas de obras em SP e
-                  MS e acesse conteúdos de qualificação técnica.
+                  Acesse cursos, vídeos práticos e conquiste certificados na construção civil.
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => navigate({ name: 'jobs' })}
+                onClick={() => navigate({ name: 'learn' })}
                 className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-[#F8FAFC] px-4 py-3 text-sm font-bold text-[#0F172A] transition hover:bg-slate-100"
               >
-                Ver Vagas e Oportunidades
+                Acessar Cursos
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
@@ -502,7 +554,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
           <div>
             <h2 className="text-2xl font-extrabold text-[#0F172A]">
               Profissionais em Destaque{' '}
-              {cidadeFiltro ? `em ${cidadeFiltro}` : 'em todo brasil'}
+              {cidadeFiltro ? `em ${cidadeFiltro}` : estadoFiltro ? `em ${estadoFiltro}` : 'em todo o Brasil'}
             </h2>
             <p className="mt-1 text-sm text-slate-600">
               Filtre pela barra acima para encontrar especialistas na sua cidade.
@@ -511,7 +563,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
           {cidadeFiltro && (
             <button
               type="button"
-              onClick={() => setCidadeFiltro('')}
+              onClick={() => { setCidadeFiltro(''); setEstadoFiltro(''); }}
               className="text-sm font-semibold text-orange-500 hover:underline"
             >
               Limpar filtro de cidade ({cidadeFiltro})
@@ -521,40 +573,20 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
 
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {profissionaisFiltrados.map((prof) => (
-            <div
-              key={prof.id}
-              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-0.5 text-xs font-semibold text-orange-600">
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    Verificado
-                  </span>
-                  <h3 className="mt-2 text-lg font-bold text-[#0F172A]">{prof.nome}</h3>
-                  <p className="text-sm font-medium text-orange-500">
-                    {prof.especialidade}
-                  </p>
+            'profile' in prof && prof.profile
+              ? <ProfessionalCard key={prof.id} professional={prof.profile} />
+              : <div key={prof.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-0.5 text-xs font-semibold text-orange-600"><ShieldCheck className="h-3.5 w-3.5" /> Verificado</span>
+                      <h3 className="mt-2 text-lg font-bold text-[#0F172A]">{prof.nome}</h3>
+                      <p className="text-sm font-medium text-orange-500">{prof.especialidade}</p>
+                    </div>
+                    <div className="flex items-center gap-1 rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold text-[#0F172A]"><Star className="h-3.5 w-3.5 fill-orange-500 text-orange-500" />{prof.nota} ({prof.avaliacoes})</div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-1.5 text-xs text-slate-500"><MapPin className="h-4 w-4 text-orange-500" />{prof.cidade}</div>
+                  <button type="button" onClick={() => navigate({ name: 'professionals' })} className="mt-5 w-full rounded-xl bg-[#0F172A] py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500">Ver Perfil Completo</button>
                 </div>
-                <div className="flex items-center gap-1 rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold text-[#0F172A]">
-                  <Star className="h-3.5 w-3.5 fill-orange-500 text-orange-500" />
-                  {prof.nota} ({prof.avaliacoes})
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center gap-1.5 text-xs text-slate-500">
-                <MapPin className="h-4 w-4 text-orange-500" />
-                {prof.cidade}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => navigate({ name: 'professionals' })}
-                className="mt-5 w-full rounded-xl bg-[#0F172A] py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500"
-              >
-                Ver Perfil Completo
-              </button>
-            </div>
           ))}
         </div>
 
@@ -616,8 +648,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
                     : 'Pedido de Orçamento Enviado!'}
                 </h3>
                 <p className="mt-2 text-sm text-slate-600">
-                  Profissionais verificados da cidade selecionada em SP/MS já podem
-                  visualizar sua solicitação.
+                  Profissionais da cidade selecionada já podem visualizar sua solicitação no mural.
                 </p>
                 <button
                   type="button"
@@ -697,12 +728,14 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
 
                 <div>
                   <label className="mb-1 block text-xs font-bold text-slate-700">
-                    Cidade do Serviço (SP ou MS) *
+                    Cidade do Serviço *
                   </label>
                   <CitySelectorSpMs
                     value={clienteForm.cidade}
                     onChange={(cidade : string) => setClienteForm({ ...clienteForm, cidade })}
-                    placeholder="Digite sua cidade em SP ou MS..."
+                    stateFilter={estadoFiltro}
+                    required
+                    placeholder="Digite sua cidade em todo o Brasil..."
                   />
                 </div>
 
@@ -739,7 +772,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
                     Cadastrar Empresa & Contratar Equipe
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Para construtoras, engenharias, condomínios e empresas em SP ou MS.
+                    Para construtoras, engenharias, condomínios e empresas de todo o Brasil.
                   </p>
                 </div>
 
@@ -816,12 +849,13 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
 
                 <div>
                   <label className="mb-1 block text-xs font-bold text-slate-700">
-                    Localização da Empresa / Obra (SP ou MS) *
+                    Localização da Empresa / Obra *
                   </label>
                   <CitySelectorSpMs
                     value={empresaForm.cidade}
                     onChange={(cidade : string) => setEmpresaForm({ ...empresaForm, cidade })}
-                    placeholder="Selecione a cidade em SP ou MS..."
+                    required
+                    placeholder="Selecione uma cidade..."
                   />
                 </div>
 
