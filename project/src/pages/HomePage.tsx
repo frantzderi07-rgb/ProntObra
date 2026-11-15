@@ -399,7 +399,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
                 </div>
               </div>
             </div>
-          </div>
+          
 
           {/* 3 CARDS INFERIORES */}
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -479,7 +479,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
           <div>
             <h2 className="text-2xl font-extrabold text-[#0F172A]">
               Profissionais em Destaque{' '}
-              {cidadeFiltro ? `em ${cidadeFiltro}` : 'em SP e MS'}
+              {cidadeFiltro ? `em ${cidadeFiltro}` : 'em todo brasil'}
             </h2>
             <p className="mt-1 text-sm text-slate-600">
               Filtre pela barra acima para encontrar especialistas na sua cidade.
