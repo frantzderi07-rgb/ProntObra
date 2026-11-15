@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ShieldCheck,
   Lock,
@@ -14,6 +14,8 @@ import {
   X,
   HardHat,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useNav } from '../lib/nav';
 import type { Job, ProfessionalWithStats } from '../lib/types';
@@ -24,8 +26,52 @@ interface HomePageProps {
   jobs?: Job[];
 }
 
+const slidesHero = [
+  {
+    src: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Profissionais trabalhando em uma obra',
+    selo: 'Profissionais qualificados',
+    titulo: 'Encontre quem entende da sua obra',
+    descricao: 'Conecte-se a profissionais preparados para cada etapa da construção.',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Projeto arquitetônico de uma construção',
+    selo: 'Sua obra, do projeto à entrega',
+    titulo: 'Planeje com mais confiança',
+    descricao: 'Encontre especialistas para tirar seus planos do papel.',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Ambiente residencial concluído',
+    selo: 'Qualidade em cada detalhe',
+    titulo: 'Construa e reforme com segurança',
+    descricao: 'Compare profissionais e escolha a melhor opção para o seu projeto.',
+  },
+];
+
 export default function HomePage({ professionals = [], jobs = [] }: HomePageProps) {
   const { navigate } = useNav();
+  const [slideAtual, setSlideAtual] = useState(0);
+  const [pausado, setPausado] = useState(false);
+
+  const proximoSlide = () => {
+    setSlideAtual((atual) => (atual + 1) % slidesHero.length);
+  };
+
+  const slideAnterior = () => {
+    setSlideAtual((atual) => (atual - 1 + slidesHero.length) % slidesHero.length);
+  };
+
+  useEffect(() => {
+    if (pausado) return;
+
+    const intervalo = window.setInterval(() => {
+      setSlideAtual((atual) => (atual + 1) % slidesHero.length);
+    }, 5000);
+
+    return () => window.clearInterval(intervalo);
+  }, [pausado]);
 
   // Filtro de cidade SP / MS
   const [cidadeFiltro, setCidadeFiltro] = useState('');
