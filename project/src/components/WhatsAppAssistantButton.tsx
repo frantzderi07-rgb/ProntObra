@@ -4,7 +4,7 @@ import { whatsappAssistantNumber } from '@/lib/supabase';
 
 export default function WhatsAppAssistantButton() {
   const [open, setOpen] = useState(false);
-  const assistantNumber = whatsappAssistantNumber.replace(/\D/g, '');
+  const assistantNumber = whatsappAssistantNumber.replace(/\D/g, '')|| '5567996936753';
   const whatsappUrl = assistantNumber
     ? `https://wa.me/${assistantNumber}?text=${encodeURIComponent('Olá! Quero conversar com a IA do ProntObra.')}`
     : '';
