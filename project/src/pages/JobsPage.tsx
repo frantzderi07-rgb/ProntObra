@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Briefcase, Plus } from 'lucide-react';
+import { X, Briefcase, Plus, Store } from 'lucide-react';
 import { useNav } from '@/lib/nav';
 import { BRAZIL_STATES, SPECIALTIES } from '@/lib/types';
 import type { Job } from '@/lib/types';
@@ -7,13 +7,18 @@ import { fetchJobs } from '@/lib/queries';
 import JobCard from '@/components/JobCard';
 import CitySelectorSpMs from '@/components/CitySelectorSpMs';
 
-export default function JobsPage() {
+export default function JobsPage({ initialSpecialty = 'all', initialCity = 'all' }: { initialSpecialty?: string; initialCity?: string }) {
   const { navigate } = useNav();
-  const [specialty, setSpecialty] = useState('all');
-  const [city, setCity] = useState('');
+  const [specialty, setSpecialty] = useState(initialSpecialty);
+  const [city, setCity] = useState(initialCity === 'all' ? '' : initialCity);
   const [state, setState] = useState('');
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setSpecialty(initialSpecialty);
+    setCity(initialCity === 'all' ? '' : initialCity);
+  }, [initialSpecialty, initialCity]);
 
   useEffect(() => {
     setLoading(true);
@@ -32,8 +37,8 @@ export default function JobsPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">Mural de Vagas e Orçamentos</h1>
-              <p className="mt-1 text-white/70">Oportunidades de trabalho e pedidos de reforma em todo o Brasil.</p>
+              <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">Vagas & Imóveis</h1>
+              <p className="mt-1 text-white/70">Oportunidades de trabalho, serviços e imóveis divulgados por parceiros.</p>
             </div>
             <button onClick={() => navigate({ name: 'post-job' })} className="btn-primary self-start">
               <Plus size={18} /> Publicar Vaga
@@ -93,6 +98,16 @@ export default function JobsPage() {
             ))}
           </div>
         )}
+
+        <section className="mt-12 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+            <div className="flex items-start gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-600"><Store size={23} /></span>
+              <div><p className="text-sm font-bold uppercase tracking-wider text-orange-600">Imóveis de parceiros</p><h2 className="mt-1 font-display text-xl font-bold text-navy-900">Casas e imóveis construídos por parceiros</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600">As oportunidades imobiliárias serão apresentadas conforme a adesão de construtoras e imobiliárias parceiras. Lojas e empresas podem falar com a equipe para divulgar seus projetos.</p></div>
+            </div>
+            <button type="button" onClick={() => navigate({ name: 'partners' })} className="btn-outline shrink-0">Conhecer parceiros</button>
+          </div>
+        </section>
       </div>
     </div>
   );

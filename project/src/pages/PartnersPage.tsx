@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, BadgePercent, Building2, Calculator, GraduationCap, Handshake, Store, X } from 'lucide-react';
+import { ArrowRight, BadgePercent, Building2, Calculator, GraduationCap, Handshake, Store, Truck, Wrench, X } from 'lucide-react';
 import { useNav } from '@/lib/nav';
 
 const benefits = [
@@ -43,6 +43,19 @@ export default function PartnersPage() {
           ))}
         </div>
 
+        <div className="mt-10">
+          <div className="mb-5"><p className="text-sm font-bold uppercase tracking-wider text-orange-600">Vitrine do ecossistema</p><h2 className="mt-2 font-display text-2xl font-bold text-navy-900">Sua marca ao lado de quem constrói.</h2></div>
+          <div className="grid gap-4 md:grid-cols-3">
+            <PartnerCategory icon={Store} title="Lojas de materiais" detail="Apresente materiais, soluções e condições para profissionais e clientes." />
+            <PartnerCategory icon={Wrench} title="Locadoras de equipamentos" detail="Divulgue andaimes, betoneiras, ferramentas e equipamentos para cada etapa." />
+            <PartnerCategory icon={Truck} title="Construtoras e imobiliárias" detail="Destaque projetos, imóveis para venda ou locação e novas oportunidades." />
+          </div>
+        </div>
+        <div className="mt-8 rounded-3xl bg-navy-950 p-6 text-white sm:p-8">
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center"><div><p className="text-sm font-bold uppercase tracking-wider text-orange-300">Cotas de patrocínio</p><h2 className="mt-2 font-display text-2xl font-bold">Uma parceria no tamanho da sua marca.</h2></div><button type="button" onClick={() => setContactOpen(true)} className="btn-primary shrink-0">Quero Ser Parceiro <ArrowRight size={16} /></button></div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">{[['Ouro', 'Máxima visibilidade'], ['Prata', 'Presença em destaque'], ['Bronze', 'Conexão com a comunidade']].map(([tier, detail]) => <div key={tier} className="rounded-2xl border border-white/10 bg-white/5 p-4"><span className="text-lg font-extrabold text-orange-300">{tier}</span><p className="mt-1 text-sm text-white/65">{detail}</p></div>)}</div>
+        </div>
+
         <div className="mt-8 flex flex-col items-start justify-between gap-5 rounded-3xl bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
           <div className="flex items-start gap-4">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-orange-400"><GraduationCap size={24} /></span>
@@ -55,6 +68,10 @@ export default function PartnersPage() {
       {contactOpen && <PartnerContactModal onClose={() => setContactOpen(false)} />}
     </div>
   );
+}
+
+function PartnerCategory({ icon: Icon, title, detail }: { icon: typeof Store; title: string; detail: string }) {
+  return <article className="card p-5"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-600"><Icon size={22} /></span><h3 className="mt-4 font-display font-bold text-navy-900">{title}</h3><p className="mt-2 text-sm leading-relaxed text-gray-600">{detail}</p></article>;
 }
 
 function PartnerContactModal({ onClose }: { onClose: () => void }) {
@@ -96,6 +113,7 @@ function PartnerContactModal({ onClose }: { onClose: () => void }) {
                   <option>Loja de materiais de construção</option>
                   <option>Fabricante</option>
                   <option>Construtora</option>
+                  <option>Imobiliária / divulgação de imóveis</option>
                   <option>Instituição de ensino</option>
                   <option>Outro</option>
                 </select>

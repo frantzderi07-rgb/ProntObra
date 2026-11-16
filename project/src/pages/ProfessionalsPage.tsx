@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { SlidersHorizontal, X, Users } from 'lucide-react';
+import { X, Users } from 'lucide-react';
 import { BRAZIL_STATES, SPECIALTIES } from '@/lib/types';
 import type { ProfessionalWithStats } from '@/lib/types';
 import { fetchProfessionals } from '@/lib/queries';
@@ -15,9 +15,10 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
   const [specialty, setSpecialty] = useState(initialSpecialty);
   const [city, setCity] = useState(initialCity === 'all' ? '' : initialCity);
   const [state, setState] = useState('');
+  const [availability, setAvailability] = useState('');
+  const [certification, setCertification] = useState('');
   const [professionals, setProfessionals] = useState<ProfessionalWithStats[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     setSpecialty(initialSpecialty);
@@ -32,8 +33,12 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
       .finally(() => setLoading(false));
   }, [specialty, city, state]);
 
-  const activeFilters = (specialty !== 'all' ? 1 : 0) + (city ? 1 : 0) + (state ? 1 : 0);
-  const clearFilters = () => { setSpecialty('all'); setCity(''); setState(''); };
+  const activeFilters = (specialty !== 'all' ? 1 : 0) + (city ? 1 : 0) + (state ? 1 : 0) + (availability ? 1 : 0) + (certification ? 1 : 0);
+  const clearFilters = () => { setSpecialty('all'); setCity(''); setState(''); setAvailability(''); setCertification(''); };
+  const filteredProfessionals = professionals.filter((professional) =>
+    (!availability || (availability === 'available' ? professional.is_available !== false : professional.is_available === false))
+    && (!certification || (certification === 'certified' ? !!professional.certifications?.length : !professional.certifications?.length)),
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 animate-fade-in">
@@ -48,7 +53,7 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Search/filter bar */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="grid flex-1 gap-3 sm:grid-cols-3">
+          <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <select value={specialty} onChange={(e) => setSpecialty(e.target.value)} className="input-field flex-1">
               <option value="all">Todas as especialidades</option>
               {SPECIALTIES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -58,10 +63,17 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
               {BRAZIL_STATES.map(([uf, name]) => <option key={uf} value={uf}>{name} ({uf})</option>)}
             </select>
             <CitySelectorSpMs value={city} onChange={setCity} stateFilter={state} placeholder="Todas as cidades" />
+            <select value={availability} onChange={(event) => setAvailability(event.target.value)} className="input-field" aria-label="Filtrar disponibilidade">
+              <option value="">Qualquer agenda</option>
+              <option value="available">Disponível agora / agenda livre</option>
+              <option value="busy">Agenda ocupada</option>
+            </select>
+            <select value={certification} onChange={(event) => setCertification(event.target.value)} className="input-field" aria-label="Filtrar certificação">
+              <option value="">Com ou sem certificação</option>
+              <option value="certified">Certificados</option>
+              <option value="uncertified">Sem certificação</option>
+            </select>
           </div>
-          <button onClick={() => setShowFilters(!showFilters)} className="btn-outline sm:hidden">
-            <SlidersHorizontal size={16} /> Filtros {activeFilters > 0 && `(${activeFilters})`}
-          </button>
           {activeFilters > 0 && (
             <button onClick={clearFilters} className="btn-ghost">
               <X size={16} /> Limpar filtros
@@ -72,7 +84,7 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
         {/* Results */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-gray-500">
-            {loading ? 'Buscando...' : `${professionals.length} profissional(is) encontrado(s)`}
+            {loading ? 'Buscando...' : `${filteredProfessionals.length} profissional(is) encontrado(s)`}
           </p>
         </div>
 
@@ -89,7 +101,7 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
               </div>
             ))}
           </div>
-        ) : professionals.length === 0 ? (
+        ) : filteredProfessionals.length === 0 ? (
           <div className="card p-12 text-center">
             <Users size={40} className="mx-auto text-gray-300" />
             <h3 className="mt-4 font-display text-lg font-bold text-navy-900">Nenhum profissional encontrado</h3>
@@ -98,7 +110,7 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {professionals.map((p) => (
+            {filteredProfessionals.map((p) => (
               <ProfessionalCard key={p.id} professional={p} />
             ))}
           </div>

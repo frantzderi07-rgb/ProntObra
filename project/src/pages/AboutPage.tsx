@@ -1,4 +1,4 @@
-import { Award, Eye, Handshake, HeartHandshake, Lightbulb, ShieldCheck, Target, Users } from 'lucide-react';
+import { Award, Eye, Handshake, HeartHandshake, Lightbulb, LockKeyhole, ShieldCheck, Target, Users } from 'lucide-react';
 
 const principles = [
   {
@@ -61,7 +61,7 @@ export default function AboutPage() {
             <p className="text-sm font-bold uppercase tracking-wider text-orange-600">Gestão e Administração</p>
             <h2 className="mt-2 font-display text-3xl font-bold text-navy-900">Tecnologia a serviço de boas oportunidades.</h2>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
-              Frantz Deriphon, idealizador, administrador e desenvolvedor de sistemas da ProntObra, conduz o projeto com o compromisso de unir inovação tecnológica, organização e geração de oportunidades para os profissionais da construção civil.
+              Frantz Derifond, idealizador, administrador e desenvolvedor de sistemas da ProntObra, conduz o projeto com o compromisso de unir inovação tecnológica, organização e geração de oportunidades para os profissionais da construção civil.
             </p>
           </div>
           <div className="lg:col-span-5">
@@ -80,6 +80,16 @@ export default function AboutPage() {
           <TrustItem icon={Users} title="Avaliações Reais" detail="Experiências compartilhadas pela comunidade" />
           <TrustItem icon={Award} title="Capacitação Contínua" detail="Aprendizado para evoluir na profissão" />
         </div>
+
+        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-orange-400"><LockKeyhole size={23} /></span>
+            <div>
+              <h2 className="font-display text-xl font-bold text-navy-900">Privacidade e proteção de dados</h2>
+              <p className="mt-2 max-w-4xl text-sm leading-relaxed text-gray-600">A ProntObra trata os dados pessoais conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), utilizando as informações para operar a plataforma e conectar seus participantes. Para solicitar informações ou exercer seus direitos como titular, entre em contato pelo e-mail <a className="font-semibold text-orange-700 hover:underline" href="mailto:contato@prontobra.com.br?subject=Privacidade%20e%20dados%20pessoais">contato@prontobra.com.br</a>.</p>
+            </div>
+          </div>
+        </section>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-5 rounded-3xl bg-navy-950 p-6 text-white sm:p-9 lg:flex-row lg:items-center">
           <div>

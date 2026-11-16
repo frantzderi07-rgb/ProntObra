@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Briefcase, MessageCircle, FileText, ShieldCheck, Award, UserRound } from 'lucide-react';
+import { MapPin, Briefcase, MessageCircle, FileText, ShieldCheck, Award, UserRound, Share2 } from 'lucide-react';
 import { useNav } from '@/lib/nav';
 import type { ProfessionalWithStats } from '@/lib/types';
 import StarRating from './StarRating';
@@ -12,7 +12,25 @@ interface ProfessionalCardProps {
 export default function ProfessionalCard({ professional: p }: ProfessionalCardProps) {
   const { navigate } = useNav();
   const [contactOpen, setContactOpen] = useState(false);
+  const [shareMessage, setShareMessage] = useState('');
   const coverPhoto = p.portfolio_photos?.[0]?.image_url;
+
+  const shareProfile = async () => {
+    const url = `${window.location.origin}/profissionais/${encodeURIComponent(p.id)}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `Perfil de ${p.full_name} | ProntObra`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setShareMessage('Link do perfil copiado.');
+      }
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        console.error('Não foi possível compartilhar o perfil:', error);
+        setShareMessage('Não foi possível compartilhar agora.');
+      }
+    }
+  };
 
   return (
     <div className="card group overflow-hidden flex flex-col">
@@ -101,6 +119,8 @@ export default function ProfessionalCard({ professional: p }: ProfessionalCardPr
             </a>
           )}
         </div>
+        <button type="button" onClick={() => void shareProfile()} className="mt-2 inline-flex items-center gap-1.5 self-start text-xs font-semibold text-navy-600 hover:text-orange-600"><Share2 size={14} /> Indicar Colega</button>
+        {shareMessage && <p role="status" className="mt-1 text-xs text-slate-500">{shareMessage}</p>}
       </div>
       <QuickContactModal professional={p} open={contactOpen} onClose={() => setContactOpen(false)} />
     </div>

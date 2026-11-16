@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, MapPin, Briefcase, Clock, MessageCircle, Mail, Star, Image as ImageIcon, X, ShieldCheck, Award, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, MapPin, Briefcase, Clock, MessageCircle, Mail, Star, Image as ImageIcon, X, ShieldCheck, Award, ThumbsUp, Share2 } from 'lucide-react';
+import QRCode from 'qrcode';
 import { useNav } from '@/lib/nav';
 import { fetchProfessionalById } from '@/lib/queries';
 import type { ProfessionalWithStats } from '@/lib/types';
@@ -18,6 +19,8 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
   const [reactions, setReactions] = useState<Record<string, string[]>>({});
+  const [badgeQr, setBadgeQr] = useState('');
+  const [shareMessage, setShareMessage] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -31,6 +34,16 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
     if (!professional) return;
     setReactions(Object.fromEntries(professional.portfolio_photos.map((photo) => [photo.id, getPhotoReactions(photo.id)])));
   }, [professional]);
+
+  useEffect(() => {
+    if (!professional) return;
+    let active = true;
+    const profileUrl = `${window.location.origin}/profissionais/${encodeURIComponent(professional.id)}`;
+    QRCode.toDataURL(profileUrl, { errorCorrectionLevel: 'M', margin: 1, width: 180 })
+      .then((dataUrl) => { if (active) setBadgeQr(dataUrl); })
+      .catch((error: unknown) => console.error('Não foi possível gerar o QR Code do perfil:', error));
+    return () => { active = false; };
+  }, [professional?.id]);
 
   useEffect(() => {
     const syncReactions = () => {
@@ -64,6 +77,21 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
 
   const p = professional;
   const waLink = p.phone ? `https://wa.me/55${p.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${p.full_name}, encontrei seu perfil na Prontobra e gostaria de solicitar um orçamento.`)}` : null;
+  const shareProfile = async () => {
+    const url = `${window.location.origin}/profissionais/${encodeURIComponent(p.id)}`;
+    try {
+      if (navigator.share) await navigator.share({ title: `Perfil de ${p.full_name} | ProntObra`, url });
+      else {
+        await navigator.clipboard.writeText(url);
+        setShareMessage('Link do perfil copiado.');
+      }
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        console.error('Não foi possível compartilhar o perfil:', error);
+        setShareMessage('Não foi possível compartilhar agora.');
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 animate-fade-in">
@@ -207,6 +235,8 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
                     <Mail size={18} /> Enviar e-mail
                   </a>
                 )}
+                <button type="button" onClick={() => void shareProfile()} className="btn-outline w-full"><Share2 size={17} /> Indicar Colega</button>
+                {shareMessage && <p role="status" className="text-xs text-slate-500">{shareMessage}</p>}
               </div>
 
               {p.phone && (
@@ -229,6 +259,13 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
                   <span className="text-gray-500">Cidade base</span>
                   <span className="font-semibold text-navy-700">{p.city}/{p.state}</span>
                 </div>
+              </div>
+              <div className="card p-5 text-center">
+                <h3 className="font-display font-bold text-navy-900">Crachá Digital ProntObra</h3>
+                <p className="mt-1 text-xs text-gray-500">Aponte a câmera para abrir este perfil público.</p>
+                {badgeQr ? <img src={badgeQr} alt={`QR Code do perfil de ${p.full_name}`} className="mx-auto mt-3 h-36 w-36" /> : <div className="mx-auto mt-3 h-36 w-36 animate-pulse rounded-xl bg-slate-100" />}
+                <p className="mt-2 text-sm font-bold text-navy-900">{p.full_name}</p>
+                <p className="text-xs text-slate-500">{p.specialty} · {p.city}/{p.state}</p>
               </div>
             </div>
           </div>

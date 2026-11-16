@@ -15,6 +15,8 @@ import DashboardPage from './pages/DashboardPage';
 import LearnPage from './pages/LearnPage';
 import AboutPage from './pages/AboutPage';
 import PartnersPage from './pages/PartnersPage';
+import ToolsPage from './pages/ToolsPage';
+import CommunityPage from './pages/CommunityPage';
 
 function AppContent() {
   const { page } = useNav();
@@ -51,11 +53,17 @@ function AppContent() {
       case 'home':
         return <HomePage professionals={professionals} jobs={jobs} />;
       case 'professionals':
-        return <ProfessionalsPage />;
+        return <ProfessionalsPage
+          initialSpecialty={'specialty' in page ? page.specialty ?? 'all' : 'all'}
+          initialCity={'city' in page ? page.city ?? 'all' : 'all'}
+        />;
       case 'professional-detail':
         return <ProfessionalDetailPage id={'id' in page ? page.id : ''} />;
       case 'jobs':
-        return <JobsPage />;
+        return <JobsPage
+          initialSpecialty={'specialty' in page ? page.specialty ?? 'all' : 'all'}
+          initialCity={'city' in page ? page.city ?? 'all' : 'all'}
+        />;
       case 'job-detail':
         return <JobDetailPage id={'id' in page ? page.id : ''} />;
       case 'post-job':
@@ -64,6 +72,10 @@ function AppContent() {
         return <DashboardPage />;
       case 'learn':
         return <LearnPage />;
+      case 'tools':
+        return <ToolsPage />;
+      case 'community':
+        return <CommunityPage />;
       case 'about':
         return <AboutPage />;
       case 'partners':
@@ -76,11 +88,45 @@ function AppContent() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
       <Header />
+      {page.name !== 'home' && <Breadcrumbs />}
       <main className="flex-1">
         {renderPage()}
       </main>
       <Footer />
     </div>
+  );
+}
+
+function Breadcrumbs() {
+  const { page, navigate } = useNav();
+  const labels: Record<string, string> = {
+    professionals: 'Profissionais',
+    'professional-detail': 'Perfil profissional',
+    jobs: 'Vagas & Imóveis',
+    'job-detail': 'Detalhes da oportunidade',
+    'post-job': 'Publicar vaga',
+    dashboard: 'Painel',
+    learn: 'Para Aprender',
+    tools: 'Ferramentas da Obra',
+    community: 'Comunidade',
+    about: 'Sobre Nós',
+    partners: 'Lojas Parceiras',
+  };
+  const section = page.name === 'professional-detail' ? 'professionals'
+    : page.name === 'job-detail' || page.name === 'post-job' ? 'jobs'
+      : page.name;
+  const sectionLabel = labels[section];
+  const currentLabel = labels[page.name];
+
+  return (
+    <nav aria-label="Caminho de navegação" className="border-b border-slate-100 bg-white">
+      <ol className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 text-xs sm:px-6 lg:px-8">
+        <li><button type="button" onClick={() => navigate({ name: 'home' })} className="font-medium text-slate-500 hover:text-orange-600">Início</button></li>
+        <li aria-hidden="true" className="text-slate-300">›</li>
+        {section !== page.name && <><li><button type="button" onClick={() => navigate(section === 'professionals' ? { name: 'professionals' } : { name: 'jobs' })} className="font-medium text-slate-500 hover:text-orange-600">{sectionLabel}</button></li><li aria-hidden="true" className="text-slate-300">›</li></>}
+        <li aria-current="page" className="font-semibold text-navy-800">{currentLabel}</li>
+      </ol>
+    </nav>
   );
 }
 
