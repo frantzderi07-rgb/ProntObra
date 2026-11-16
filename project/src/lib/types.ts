@@ -1,10 +1,12 @@
 export type UserType = 'professional' | 'company' | 'client';
+export type WhatsAppUserCategory = 'professional' | 'empresa' | 'pessoa_fisica' | 'visitor';
 
 export type ContractType = 'diaria' | 'empreitada' | 'clt';
 
 export type JobStatus = 'open' | 'closed';
 
 export type ApplicationStatus = 'pending' | 'accepted' | 'rejected';
+export type CommunityMediaType = 'image' | 'video';
 
 export interface Profile {
   id: string;
@@ -15,6 +17,7 @@ export interface Profile {
   phone: string | null;
   avatar_url: string | null;
   specialty: string | null;
+  specialties?: string[];
   experience_years: number | null;
   city: string;
   state: string;
@@ -25,6 +28,11 @@ export interface Profile {
   is_available?: boolean;
   certifications?: string[];
   company_cnpj?: string | null;
+  whatsapp_number?: string | null;
+  whatsapp_alerts_enabled?: boolean;
+  whatsapp_feed_enabled?: boolean;
+  whatsapp_recommendations_enabled?: boolean;
+  tax_document_private?: string;
 }
 
 export interface PortfolioPhoto {
@@ -68,6 +76,21 @@ export interface Review {
   reviewer_name: string;
   rating: number;
   comment: string | null;
+  created_at: string;
+}
+
+export interface CommunityPostRecord {
+  id: string;
+  user_id: string;
+  author: string;
+  specialty: string;
+  title: string;
+  city: string;
+  state: string;
+  description: string;
+  media_url: string | null;
+  media_type: CommunityMediaType | null;
+  video_url: string | null;
   created_at: string;
 }
 

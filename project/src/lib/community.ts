@@ -1,3 +1,5 @@
+import type { CommunityMediaType } from './types';
+
 const STORAGE_KEY = 'prontobra:community-posts';
 
 export interface CommunityComment {
@@ -17,6 +19,8 @@ export interface CommunityPost {
   description: string;
   photoUrl: string;
   videoUrl: string;
+  mediaUrl?: string;
+  mediaType?: CommunityMediaType;
   createdAt: string;
   likedBy: string[];
   comments: CommunityComment[];
@@ -83,6 +87,22 @@ function writePosts(posts: CommunityPost[]) {
 
 export function getCommunityPosts(): CommunityPost[] {
   return readPosts().sort((first, second) => second.createdAt.localeCompare(first.createdAt));
+}
+
+export function cacheCommunityPosts(posts: CommunityPost[]) {
+  const currentPosts = readPosts();
+  const cachedById = new Map(currentPosts.map((post) => [post.id, post]));
+  const syncedPosts = posts.map((post) => {
+    const cached = cachedById.get(post.id);
+    return cached ? { ...post, likedBy: cached.likedBy, comments: cached.comments } : post;
+  });
+  const syncedIds = new Set(syncedPosts.map((post) => post.id));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...syncedPosts, ...currentPosts.filter((post) => !syncedIds.has(post.id))]));
+  } catch (error) {
+    console.error('Não foi possível atualizar o cache local da comunidade:', error);
+    throw new Error('Não foi possível atualizar o feed salvo neste dispositivo.');
+  }
 }
 
 export function createCommunityPost(

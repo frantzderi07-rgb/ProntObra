@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Building2, GraduationCap, HardHat, MapPin, Search, Star, UserRound } from 'lucide-react';
+import { ArrowRight, Building2, GraduationCap, MapPin, Search, Star, UserRound, MessageCircle } from 'lucide-react';
 import { useNav } from '@/lib/nav';
 import { BRAZIL_STATES, SPECIALTIES } from '@/lib/types';
 import type { Job, ProfessionalWithStats } from '@/lib/types';
@@ -77,6 +77,10 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
               <div className="mt-5 flex flex-wrap gap-3 text-xs font-medium text-slate-300">
                 <span>✓ Busca por cidade e especialidade</span><span>✓ Profissionais em todo o Brasil</span>
               </div>
+              <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('prontobra:open-whatsapp-assistant'))}
+                className="mt-5 inline-flex items-center gap-2 rounded-xl border border-green-400/40 bg-green-500/10 px-4 py-2.5 text-sm font-semibold text-green-200 transition hover:bg-green-500/20">
+                <MessageCircle size={17} /> Converse com a IA pelo WhatsApp
+              </button>
             </div>
             <div className="hidden lg:col-span-5 lg:block">
               <div className="relative mx-auto max-w-md">

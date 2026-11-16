@@ -80,6 +80,24 @@ export async function signInLocal(email: string, password: string): Promise<Loca
   return user;
 }
 
+export async function updateLocalEmail(userId: string, email: string): Promise<LocalUser> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const accounts = read<LocalAccount[]>(ACCOUNT_KEY, []);
+  if (accounts.some((account) => account.id !== userId && account.email === normalizedEmail)) {
+    throw new Error('Já existe uma conta com este e-mail.');
+  }
+  const accountIndex = accounts.findIndex((account) => account.id === userId);
+  if (accountIndex < 0) throw new Error('Não foi possível localizar a conta neste dispositivo.');
+  accounts[accountIndex] = { ...accounts[accountIndex], email: normalizedEmail };
+  write(ACCOUNT_KEY, accounts);
+  const profiles = read<Profile[]>(PROFILE_KEY, []);
+  write(PROFILE_KEY, profiles.map((profile) => profile.user_id === userId ? { ...profile, email: normalizedEmail } : profile));
+  const user = { id: userId, email: normalizedEmail };
+  localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(user));
+  notifyDataChanged();
+  return user;
+}
+
 export function getActiveLocalUser(): LocalUser | null {
   return read<LocalUser | null>(ACTIVE_USER_KEY, null);
 }

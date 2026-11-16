@@ -1,0 +1,4 @@
+project_id = "prontobra"
+
+[functions.whatsapp-ai]
+verify_jwt = false

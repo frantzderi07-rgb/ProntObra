@@ -17,6 +17,8 @@ import AboutPage from './pages/AboutPage';
 import PartnersPage from './pages/PartnersPage';
 import ToolsPage from './pages/ToolsPage';
 import CommunityPage from './pages/CommunityPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import WhatsAppAssistantButton from './components/WhatsAppAssistantButton';
 
 function AppContent() {
   const { page } = useNav();
@@ -70,6 +72,8 @@ function AppContent() {
         return <PostJobPage />;
       case 'dashboard':
         return <DashboardPage />;
+      case 'reset-password':
+        return <ResetPasswordPage />;
       case 'learn':
         return <LearnPage />;
       case 'tools':
@@ -93,6 +97,7 @@ function AppContent() {
         {renderPage()}
       </main>
       <Footer />
+      <WhatsAppAssistantButton />
     </div>
   );
 }
@@ -106,6 +111,7 @@ function Breadcrumbs() {
     'job-detail': 'Detalhes da oportunidade',
     'post-job': 'Publicar vaga',
     dashboard: 'Painel',
+    'reset-password': 'Redefinir senha',
     learn: 'Para Aprender',
     tools: 'Ferramentas da Obra',
     community: 'Comunidade',

@@ -12,7 +12,7 @@ export default function CommunityPage() {
         </div>
       </section>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-5 flex items-center gap-2 text-sm text-slate-600"><MessageCircle size={17} className="text-orange-500" /> Feed atualizado e salvo neste dispositivo.</div>
+        <div className="mb-5 flex items-center gap-2 text-sm text-slate-600"><MessageCircle size={17} className="text-orange-500" /> Compartilhe fotos e vídeos dos seus serviços com a comunidade.</div>
         <CommunityFeed />
       </div>
     </div>

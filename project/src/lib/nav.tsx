@@ -12,7 +12,8 @@ export type Page =
   | { name: 'community' }
   | { name: 'about' }
   | { name: 'partners' }
-  | { name: 'dashboard' };
+  | { name: 'dashboard' }
+  | { name: 'reset-password' };
 
 interface NavContextValue {
   page: Page;
@@ -33,6 +34,7 @@ function pageFromPath(pathname: string): Page {
   if (path === '/sobre') return { name: 'about' };
   if (path === '/parceiros') return { name: 'partners' };
   if (path === '/painel') return { name: 'dashboard' };
+  if (path === '/redefinir-senha') return { name: 'reset-password' };
   return { name: 'home' };
 }
 
@@ -50,6 +52,7 @@ function pathFromPage(page: Page): string {
     case 'about': return '/sobre';
     case 'partners': return '/parceiros';
     case 'dashboard': return '/painel';
+    case 'reset-password': return '/redefinir-senha';
   }
 }
 
