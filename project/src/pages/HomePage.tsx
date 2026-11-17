@@ -255,7 +255,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
                 Quem entende de obra, encontra na <span translate="no" className="notranslate text-orange-400">ProntObra.</span>
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
-                Conectando quem constrói a quem precisa em todo o Brasil.
+                Quem entende de obra, encontra na ProntObra.
               </p>
               <div className="mt-8 rounded-2xl border border-white/10 bg-white/10 p-3 shadow-2xl backdrop-blur-md">
                 <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">

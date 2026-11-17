@@ -31,7 +31,7 @@ export default function Footer() {
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-600"><HardHat className="h-5 w-5 text-white" strokeWidth={2.5} /></span>
               <span translate="no" className="notranslate font-display text-xl font-extrabold">Pronto<span className="text-orange-400">bra</span></span>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-white/65">Conectando quem constrói a quem precisa em todo o Brasil.</p>
+            <p className="mt-4 text-sm leading-relaxed text-white/65">Quem entende de obra, encontra na ProntObra.</p>
           </div>
           {footerLinks.map((column) => (
             <div key={column.title}>
