@@ -620,7 +620,7 @@ function VipPlansModal({ onClose }: { onClose: () => void }) {
             <p className="mt-2 text-xs text-orange-800">Valores e ativação são consultados com a equipe; não há cobrança automática por este modal.</p>
           </div>
         </div>
-        <a href="mailto:prontobra.oficial@gmail.com?subject=Interesse%20no%20Destaque%20VIP" className="btn-primary mt-5 w-full">Tenho interesse no Destaque VIP</a>
+        <a href="mailto:prontobra@gmail.com?subject=Interesse%20no%20Destaque%20VIP" className="btn-primary mt-5 w-full">Tenho interesse no Destaque VIP</a>
         <button type="button" onClick={onClose} className="btn-outline mt-2 w-full">Fechar</button>
       </div>
     </div>

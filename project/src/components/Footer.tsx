@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { ArrowRight, HardHat, Mail } from 'lucide-react';
 import { useNav, type Page } from '@/lib/nav';
 
+const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&format=png&data=${encodeURIComponent('https://prontobra.vercel.app/')}`;
+const qrCodeDownloadUrl = `${qrCodeUrl}&download=1`;
+
 const footerLinks: { title: string; links: { label: string; page: Page }[] }[] = [
   { title: 'Institucional', links: [{ label: 'Sobre Nós', page: { name: 'about' } }, { label: 'Lojas Parceiras', page: { name: 'partners' } }, { label: 'Comunidade', page: { name: 'community' } }] },
   { title: 'Plataforma', links: [{ label: 'Início', page: { name: 'home' } }, { label: 'Profissionais', page: { name: 'professionals' } }, { label: 'Vagas & Imóveis', page: { name: 'jobs' } }, { label: 'Para Aprender', page: { name: 'learn' } }] },
@@ -18,7 +21,7 @@ export default function Footer() {
     event.preventDefault();
     const subject = encodeURIComponent('Novidades ProntObra');
     const body = encodeURIComponent(`Quero receber novidades da ProntObra neste e-mail: ${email}`);
-    window.location.href = `mailto:prontobra.oficial@gmail.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:prontobra@gmail.com?subject=${subject}&body=${body}`;
     setNotice('Seu aplicativo de e-mail foi solicitado para concluir a inscrição.');
   };
 
@@ -48,6 +51,15 @@ export default function Footer() {
           <div className="flex w-full gap-2 sm:max-w-md"><label htmlFor="newsletter-email" className="sr-only">Seu e-mail</label><input id="newsletter-email" required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/40 focus:border-orange-400" placeholder="voce@email.com" /><button className="btn-primary !px-4 !py-2.5"><Mail size={16} /><span className="hidden sm:inline">Inscrever</span><ArrowRight size={16} /></button></div>
           {notice && <p role="status" className="text-xs text-orange-200 sm:basis-full">{notice}</p>}
         </form>
+
+        <div className="mt-8 flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center sm:flex-row sm:justify-center sm:text-left">
+          <img src={qrCodeUrl} alt="QR Code para acessar a ProntObra pelo celular" width={160} height={160} loading="lazy" className="rounded-xl bg-white p-2" />
+          <div>
+            <h2 className="font-display text-lg font-bold">Acesse pelo celular</h2>
+            <p className="mt-1 text-sm text-white/60">Aponte a câmera do celular para o QR Code.</p>
+            <a href={qrCodeDownloadUrl} download="prontobra-qr-code.png" className="btn-primary mt-3 inline-flex">Baixar QR Code</a>
+          </div>
+        </div>
 
         <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
