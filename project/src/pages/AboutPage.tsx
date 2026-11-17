@@ -86,7 +86,7 @@ export default function AboutPage() {
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-orange-400"><LockKeyhole size={23} /></span>
             <div>
               <h2 className="font-display text-xl font-bold text-navy-900">Privacidade e proteção de dados</h2>
-              <p className="mt-2 max-w-4xl text-sm leading-relaxed text-gray-600">A ProntObra trata os dados pessoais conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), utilizando as informações para operar a plataforma e conectar seus participantes. Para solicitar informações ou exercer seus direitos como titular, entre em contato pelo e-mail <a className="font-semibold text-orange-700 hover:underline" href="mailto:contato@prontobra.com.br?subject=Privacidade%20e%20dados%20pessoais">contato@prontobra.com.br</a>.</p>
+              <p className="mt-2 max-w-4xl text-sm leading-relaxed text-gray-600">A ProntObra trata os dados pessoais conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), utilizando as informações para operar a plataforma e conectar seus participantes. Para solicitar informações ou exercer seus direitos como titular, entre em contato pelo e-mail <a className="font-semibold text-orange-700 hover:underline" href="mailto:prontobra.oficial@gmail.com?subject=Privacidade%20e%20dados%20pessoais">prontobra.oficial@gmail.com</a>.</p>
             </div>
           </div>
         </section>
@@ -98,7 +98,7 @@ export default function AboutPage() {
             <p className="mt-2 max-w-2xl text-sm text-white/70">Lojas de materiais, construtoras e instituições de ensino: fale com a administração da ProntObra.</p>
           </div>
           <a
-            href="mailto:contato@prontobra.com.br?subject=Parceria%20com%20a%20ProntObra"
+            href="mailto:prontobra.oficial@gmail.com?subject=Parceria%20com%20a%20ProntObra"
             className="btn-primary shrink-0"
           >
             <Handshake size={18} /> Seja um Parceiro / Falar com a Administração

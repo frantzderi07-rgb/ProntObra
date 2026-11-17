@@ -18,7 +18,7 @@ export default function Footer() {
     event.preventDefault();
     const subject = encodeURIComponent('Novidades ProntObra');
     const body = encodeURIComponent(`Quero receber novidades da ProntObra neste e-mail: ${email}`);
-    window.location.href = `mailto:contato@prontobra.com.br?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:prontobra.oficial@gmail.com?subject=${subject}&body=${body}`;
     setNotice('Seu aplicativo de e-mail foi solicitado para concluir a inscrição.');
   };
 
