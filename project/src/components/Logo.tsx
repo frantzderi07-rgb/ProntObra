@@ -160,7 +160,7 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
 
         {/* Nome Piscando Lento e Slogan Repetindo da Direita para a Esquerda */}
         <div className="flex flex-col justify-center">
-          <div className="animate-brand-blink-slow flex items-baseline leading-none">
+          <div translate="no" className="notranslate animate-brand-blink-slow flex items-baseline leading-none">
             <span
               className={`${titleSizes[size]} font-extrabold tracking-tight text-[#0F172A]`}
             >
@@ -173,7 +173,7 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
             </span>
           </div>
 
-          <span className="animate-slogan-rtl-loop mt-1.5 text-[11px] sm:text-xs font-semibold tracking-wide text-slate-700">
+          <span translate="no" className="notranslate animate-slogan-rtl-loop mt-1.5 text-[11px] sm:text-xs font-semibold tracking-wide text-slate-700">
             Quem entende de obra, encontra na Prontobra
           </span>
         </div>
