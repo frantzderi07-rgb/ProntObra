@@ -420,6 +420,11 @@ export default function DashboardPage() {
               <p className="text-white/60 text-sm">
                 {isProfessional ? `${profile.specialty} · ${profile.city}/${profile.state}` : profile.user_type === 'company' ? 'Conta Empresarial' : 'Conta de Cliente'}
               </p>
+              {(isProfessional || isCompany) && profile.is_featured && (
+                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-orange-500/20 px-2.5 py-1 text-xs font-bold text-orange-200">
+                  <BadgeCheck size={14} /> Destaque VIP
+                </span>
+              )}
             </div>
             {isProfessional && (
               <button

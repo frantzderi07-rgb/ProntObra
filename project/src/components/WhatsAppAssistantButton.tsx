@@ -16,7 +16,7 @@ export default function WhatsAppAssistantButton() {
   }, []);
 
   return (
-    <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
+    <div className="fixed bottom-4 right-3 z-40 flex flex-col items-end gap-3 sm:bottom-5 sm:right-5">
       {open && (
         <div role="dialog" aria-label="Assistente IA do ProntObra" className="w-[min(21rem,calc(100vw-2.5rem))] rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
           <div className="flex items-start justify-between gap-3">
@@ -36,9 +36,10 @@ export default function WhatsAppAssistantButton() {
         </div>
       )}
       <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open}
+        aria-label="Fale com a IA do ProntObra"
         className="group flex items-center gap-3 rounded-full bg-green-600 px-4 py-3 text-white shadow-xl transition hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300">
         <MessageCircle size={23} />
-        <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm font-bold transition-all group-hover:max-w-52 sm:max-w-52">Fale com a IA do ProntObra</span>
+        <span className="max-w-[13rem] whitespace-normal text-left text-sm font-bold leading-tight transition-all">Fale com a IA do ProntObra</span>
       </button>
     </div>
   );

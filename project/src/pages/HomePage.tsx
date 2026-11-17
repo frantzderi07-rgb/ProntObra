@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, BadgePercent, Building2, CheckCircle2, GraduationCap, Handshake, MapPin, MessageCircle, Search, Star, Store, Truck, UserRound, Wrench, X } from 'lucide-react';
+import { ArrowRight, Award, BadgeCheck, BadgePercent, Building2, CheckCircle2, GraduationCap, MapPin, MessageCircle, Search, Star, Store, Truck, UserRound, Wrench, X } from 'lucide-react';
 import { useNav } from '@/lib/nav';
 import { BRAZIL_STATES, SPECIALTIES, type Review } from '@/lib/types';
 import type { Job, ProfessionalWithStats } from '@/lib/types';
@@ -58,6 +58,7 @@ type PartnerRequest = {
   whatsapp: string;
   city: string;
   state: string;
+  partnershipType: string;
   message: string;
 };
 
@@ -70,10 +71,34 @@ const emptyPartnerRequest: PartnerRequest = {
   whatsapp: '',
   city: '',
   state: '',
+  partnershipType: '',
   message: '',
 };
 
-export default function HomePage({ professionals = [] }: HomePageProps) {
+const partnershipTypes = [
+  'Patrocinador (Ouro, Prata ou Bronze)',
+  'Clube de Descontos / Cupons',
+  'Loja Parceira / Divulgação',
+  'Outro',
+];
+
+const formatCnpj = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 14);
+  return digits
+    .replace(/^(\d{2})(\d)/, '$1.$2')
+    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2');
+};
+
+const formatPartnerPhone = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 2) return digits ? `(${digits}` : '';
+  if (digits.length < 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
+export default function HomePage({ professionals = [], jobs = [] }: HomePageProps) {
   const { navigate } = useNav();
   const { user } = useAuth();
   const [type, setType] = useState('professional');
@@ -83,6 +108,7 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
   const [authOpen, setAuthOpen] = useState(false);
   const [authType, setAuthType] = useState<'professional' | 'company' | 'client'>('client');
   const [partnerRequest, setPartnerRequest] = useState<PartnerRequest | null>(null);
+  const [vipPlansOpen, setVipPlansOpen] = useState(false);
   const [couponCodes, setCouponCodes] = useState<Record<string, string>>({});
   const [couponMessage, setCouponMessage] = useState('');
   const [redeemingCoupon, setRedeemingCoupon] = useState<string | null>(null);
@@ -138,7 +164,12 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
   };
 
   const openPartnerRequest = (tier = '', category = '') => {
-    setPartnerRequest({ ...emptyPartnerRequest, tier, category });
+    setPartnerRequest({
+      ...emptyPartnerRequest,
+      tier,
+      category,
+      partnershipType: tier ? partnershipTypes[0] : category ? partnershipTypes[2] : '',
+    });
   };
 
   const redeemCoupon = async (couponId: string) => {
@@ -270,6 +301,29 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
           )}
         </section>
 
+        <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8" aria-labelledby="vip-plans-title">
+          <div className="rounded-3xl border border-orange-200 bg-white p-5 shadow-sm sm:p-8">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="max-w-2xl">
+                <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-600"><Award size={17} /> Mais visibilidade para seu perfil</p>
+                <h2 id="vip-plans-title" className="mt-2 section-title">Conheça os planos ProntObra</h2>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">Comece gratuitamente ou consulte a equipe sobre o Destaque VIP para profissionais e empresas.</p>
+              </div>
+              <button type="button" onClick={() => setVipPlansOpen(true)} className="btn-primary shrink-0">Comparar planos <ArrowRight size={17} /></button>
+            </div>
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="font-bold text-slate-900">Plano Gratuito</p>
+                <p className="mt-1 text-sm text-slate-600">Perfil público, presença nas buscas e acesso aos recursos básicos da plataforma.</p>
+              </div>
+              <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4">
+                <p className="flex items-center gap-2 font-bold text-orange-800"><BadgeCheck size={18} /> Destaque VIP</p>
+                <p className="mt-1 text-sm text-orange-800">Selo de destaque e prioridade no topo das buscas, conforme disponibilidade e critérios da plataforma.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8" aria-labelledby="ecosystem-title">
           <div className="max-w-3xl">
             <p className="text-sm font-bold uppercase tracking-wider text-orange-600">Vitrine do ecossistema</p>
@@ -380,6 +434,7 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
       </div>
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultMode="signup" defaultUserType={authType} />
       {partnerRequest && <PartnerRequestModal initialRequest={partnerRequest} onClose={() => setPartnerRequest(null)} />}
+      {vipPlansOpen && <VipPlansModal onClose={() => setVipPlansOpen(false)} />}
     </>
   );
 }
@@ -410,6 +465,16 @@ function PartnerRequestModal({ initialRequest, onClose }: { initialRequest: Part
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError('');
+    const cnpjDigits = form.cnpj.replace(/\D/g, '');
+    const phoneDigits = form.whatsapp.replace(/\D/g, '');
+    if (cnpjDigits.length !== 14) {
+      setError('Informe um CNPJ válido com 14 dígitos.');
+      return;
+    }
+    if (phoneDigits.length !== 11) {
+      setError('Informe um WhatsApp com DDD e 11 dígitos.');
+      return;
+    }
     if (!isSupabaseConfigured) {
       setError('O envio de solicitações está temporariamente indisponível. Tente novamente mais tarde.');
       return;
@@ -417,12 +482,13 @@ function PartnerRequestModal({ initialRequest, onClose }: { initialRequest: Part
     setLoading(true);
     const { error: insertError } = await supabase.from('solicitacoes_parceria').insert({
       nome_empresa: form.companyName.trim(),
-      cnpj: form.cnpj.replace(/\D/g, '') || null,
+      cnpj: cnpjDigits,
       responsavel: form.responsibleName.trim(),
       whatsapp: form.whatsapp.replace(/\D/g, ''),
       cidade: form.city.trim(),
       estado: form.state,
       categoria: form.category || null,
+      tipo_parceria: form.partnershipType,
       cota: form.tier || null,
       mensagem: form.message.trim(),
       status: 'pendente',
@@ -437,41 +503,49 @@ function PartnerRequestModal({ initialRequest, onClose }: { initialRequest: Part
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-navy-950/70 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="partnership-modal-title" className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-8" onClick={(event) => event.stopPropagation()}>
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-navy-950/70 p-2 backdrop-blur-sm sm:p-4" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="partnership-modal-title" className="relative max-h-[calc(100dvh-1rem)] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl sm:max-h-[92vh] sm:p-8" onClick={(event) => event.stopPropagation()}>
         <button type="button" onClick={onClose} aria-label="Fechar" className="absolute right-4 top-4 rounded-lg p-2 text-slate-400 hover:bg-slate-100"><X size={20} /></button>
         {saved ? (
           <div className="py-6 text-center">
             <CheckCircle2 size={48} className="mx-auto text-green-600" />
-            <h2 id="partnership-modal-title" className="mt-4 font-display text-2xl font-bold text-navy-900">Solicitação enviada!</h2>
-            <p className="mt-2 text-sm text-slate-600">Nossa equipe recebeu seus dados e entrará em contato para conversar sobre a parceria.</p>
+            <h2 id="partnership-modal-title" className="mt-4 break-words font-display text-xl font-bold leading-snug text-navy-900 sm:text-2xl">Proposta recebida!</h2>
+            <p className="mt-2 text-sm text-slate-600">Recebemos sua proposta! Nossa equipe entrará em contato em breve.</p>
             {whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3 font-bold text-white transition hover:bg-green-700 sm:w-auto"><MessageCircle size={18} /> Continuar pelo WhatsApp</a> : <p className="mt-4 text-xs text-slate-500">O WhatsApp de parcerias ainda não está configurado.</p>}
             <div><button type="button" onClick={onClose} className="btn-outline mt-4">Fechar</button></div>
           </div>
         ) : (
           <>
             <p className="text-sm font-bold uppercase tracking-wider text-orange-600">Parcerias</p>
-            <h2 id="partnership-modal-title" className="mt-2 font-display text-2xl font-bold text-navy-900">Solicitar Parceria ProntObra</h2>
+            <h2 id="partnership-modal-title" className="mt-2 break-words pr-8 font-display text-xl font-bold leading-snug text-navy-900 sm:text-2xl">Vamos conversar sobre parceria</h2>
             <p className="mt-1 text-sm text-slate-600">Conte um pouco sobre sua empresa. Os campos marcados são obrigatórios.</p>
             <form onSubmit={(event) => void submit(event)} className="mt-5 grid gap-4 sm:grid-cols-2">
               <label className="block text-sm font-medium text-navy-700">Nome da Empresa
                 <input required maxLength={120} value={form.companyName} onChange={(event) => update('companyName', event.target.value)} className="input-field mt-1" />
               </label>
-              <label className="block text-sm font-medium text-navy-700">CNPJ (opcional)
-                <input inputMode="numeric" maxLength={18} value={form.cnpj} onChange={(event) => update('cnpj', event.target.value)} placeholder="00.000.000/0001-00" className="input-field mt-1" />
+              <label className="block text-sm font-medium text-navy-700">CNPJ da Empresa
+                <input required inputMode="numeric" autoComplete="on" maxLength={18} value={form.cnpj} onChange={(event) => update('cnpj', formatCnpj(event.target.value))} placeholder="00.000.000/0000-00" className="input-field mt-1" />
               </label>
               <label className="block text-sm font-medium text-navy-700">Responsável
                 <input required maxLength={120} value={form.responsibleName} onChange={(event) => update('responsibleName', event.target.value)} className="input-field mt-1" />
               </label>
-              <label className="block text-sm font-medium text-navy-700">WhatsApp
-                <input required type="tel" inputMode="tel" maxLength={20} value={form.whatsapp} onChange={(event) => update('whatsapp', event.target.value)} placeholder="(11) 99999-9999" className="input-field mt-1" />
+              <label className="block text-sm font-medium text-navy-700">WhatsApp / Telefone
+                <input required type="tel" inputMode="tel" autoComplete="tel" maxLength={15} value={form.whatsapp} onChange={(event) => update('whatsapp', formatPartnerPhone(event.target.value))} placeholder="(00) 00000-0000" className="input-field mt-1" />
               </label>
-              <label className="block text-sm font-medium text-navy-700">Cidade
-                <input required maxLength={100} value={form.city} onChange={(event) => update('city', event.target.value)} className="input-field mt-1" />
-              </label>
-              <label className="block text-sm font-medium text-navy-700">Estado (UF)
-                <select required value={form.state} onChange={(event) => update('state', event.target.value)} className="input-field mt-1">
-                  <option value="">Selecione</option>{BRAZIL_STATES.map(([uf, name]) => <option key={uf} value={uf}>{name} ({uf})</option>)}
+              <fieldset className="grid gap-4 sm:col-span-2 sm:grid-cols-2">
+                <legend className="mb-2 text-sm font-semibold text-black sm:col-span-2">Cidade e Estado (UF)</legend>
+                <label className="block text-sm font-medium text-navy-700">Cidade
+                  <input required maxLength={100} value={form.city} onChange={(event) => update('city', event.target.value)} placeholder="Andradina" className="input-field mt-1" />
+                </label>
+                <label className="block text-sm font-medium text-navy-700">Estado (UF)
+                  <select required value={form.state} onChange={(event) => update('state', event.target.value)} className="input-field mt-1">
+                    <option value="">Selecione</option>{BRAZIL_STATES.map(([uf, name]) => <option key={uf} value={uf}>{name} ({uf})</option>)}
+                  </select>
+                </label>
+              </fieldset>
+              <label className="block text-sm font-medium text-navy-700">Tipo de Parceria
+                <select required value={form.partnershipType} onChange={(event) => update('partnershipType', event.target.value)} className="input-field mt-1">
+                  <option value="">Selecione</option>{partnershipTypes.map((partnershipType) => <option key={partnershipType}>{partnershipType}</option>)}
                 </select>
               </label>
               <label className="block text-sm font-medium text-navy-700">Categoria / segmento
@@ -485,7 +559,7 @@ function PartnerRequestModal({ initialRequest, onClose }: { initialRequest: Part
                   <option value="">A definir</option>{sponsorshipTiers.map((tier) => <option key={tier.name}>{tier.name}</option>)}
                 </select>
               </label>
-              <label className="block text-sm font-medium text-navy-700 sm:col-span-2">Mensagem
+              <label className="block text-sm font-medium text-navy-700 sm:col-span-2">Conte um pouco sobre sua proposta
                 <textarea required maxLength={1000} rows={4} value={form.message} onChange={(event) => update('message', event.target.value)} className="input-field mt-1 resize-y" placeholder="Conte sobre sua empresa e a parceria que gostaria de propor." />
               </label>
               {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:col-span-2">{error}</p>}
@@ -493,6 +567,35 @@ function PartnerRequestModal({ initialRequest, onClose }: { initialRequest: Part
             </form>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+function VipPlansModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-3 sm:p-4" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="vip-modal-title" className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl sm:p-7" onClick={(event) => event.stopPropagation()}>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-600"><BadgeCheck size={17} /> Planos para profissionais e empresas</p>
+            <h2 id="vip-modal-title" className="mt-2 break-words font-display text-xl font-bold text-black sm:text-2xl">Escolha como quer aparecer</h2>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Fechar" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={20} /></button>
+        </div>
+        <div className="mt-5 grid gap-3">
+          <div className="rounded-xl border border-slate-200 p-4">
+            <h3 className="font-bold text-black">Plano Gratuito</h3>
+            <p className="mt-1 text-sm leading-relaxed text-slate-600">Perfil público e participação nas buscas da ProntObra, sem selo VIP.</p>
+          </div>
+          <div className="rounded-xl border border-orange-300 bg-orange-50 p-4">
+            <h3 className="flex items-center gap-2 font-bold text-orange-800"><Award size={18} /> Destaque VIP</h3>
+            <p className="mt-1 text-sm leading-relaxed text-orange-900">Selo visual de Destaque VIP e prioridade no topo das buscas da página inicial, conforme disponibilidade e critérios da plataforma.</p>
+            <p className="mt-2 text-xs text-orange-800">Valores e ativação são consultados com a equipe; não há cobrança automática por este modal.</p>
+          </div>
+        </div>
+        <a href="mailto:contato@prontobra.com.br?subject=Interesse%20no%20Destaque%20VIP" className="btn-primary mt-5 w-full">Tenho interesse no Destaque VIP</a>
+        <button type="button" onClick={onClose} className="btn-outline mt-2 w-full">Fechar</button>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Briefcase, MessageCircle, FileText, ShieldCheck, Award, UserRound, Share2 } from 'lucide-react';
+import { MapPin, Briefcase, MessageCircle, FileText, ShieldCheck, Award, UserRound, Share2, BadgeCheck } from 'lucide-react';
 import { useNav } from '@/lib/nav';
 import type { ProfessionalWithStats } from '@/lib/types';
 import StarRating from './StarRating';
@@ -22,7 +22,7 @@ export default function ProfessionalCard({ professional: p }: ProfessionalCardPr
         await navigator.share({ title: `Perfil de ${p.full_name} | ProntObra`, url });
       } else {
         await navigator.clipboard.writeText(url);
-        setShareMessage('Link do perfil copiado.');
+        setShareMessage('Link copiado!');
       }
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -46,8 +46,8 @@ export default function ProfessionalCard({ professional: p }: ProfessionalCardPr
           <div className="h-full w-full bg-gradient-to-br from-navy-200 to-navy-300" />
         )}
         {p.is_featured && (
-          <span className="badge absolute left-3 top-3 bg-orange-500 text-white shadow-md">
-            Destaque
+          <span className="badge absolute left-3 top-3 inline-flex items-center gap-1 bg-orange-500 text-white shadow-md">
+            <BadgeCheck size={13} /> Destaque VIP
           </span>
         )}
         <span className="badge absolute right-3 top-3 bg-white/90 text-navy-800">
@@ -73,7 +73,8 @@ export default function ProfessionalCard({ professional: p }: ProfessionalCardPr
               <MapPin size={12} /> {p.city} — {p.state}
             </p>
             <div className="mt-1 flex flex-wrap gap-1">
-              <span className="badge bg-blue-50 !px-2 !py-0.5 text-blue-700"><ShieldCheck size={11} /> Verificado</span>
+              <span className="badge bg-slate-100 !px-2 !py-0.5 text-slate-700"><ShieldCheck size={11} /> Perfil ProntObra</span>
+              {p.is_featured && <span className="badge bg-orange-50 !px-2 !py-0.5 text-orange-800"><BadgeCheck size={11} /> Destaque VIP</span>}
               {!!p.certifications?.length && <span className="badge bg-amber-50 !px-2 !py-0.5 text-amber-700"><Award size={11} /> Certificado</span>}
             </div>
           </div>
@@ -119,7 +120,7 @@ export default function ProfessionalCard({ professional: p }: ProfessionalCardPr
             </a>
           )}
         </div>
-        <button type="button" onClick={() => void shareProfile()} className="mt-2 inline-flex items-center gap-1.5 self-start text-xs font-semibold text-navy-600 hover:text-orange-600"><Share2 size={14} /> Indicar Colega</button>
+        <button type="button" onClick={() => void shareProfile()} className="mt-2 inline-flex items-center gap-1.5 self-start text-xs font-semibold text-navy-600 hover:text-orange-600"><Share2 size={14} /> Compartilhar meu Perfil</button>
         {shareMessage && <p role="status" className="mt-1 text-xs text-slate-500">{shareMessage}</p>}
       </div>
       <QuickContactModal professional={p} open={contactOpen} onClose={() => setContactOpen(false)} />

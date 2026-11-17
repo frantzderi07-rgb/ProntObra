@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, MapPin, Briefcase, Clock, MessageCircle, Mail, Star, Image as ImageIcon, X, ShieldCheck, Award, ThumbsUp, Share2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Briefcase, Clock, MessageCircle, Mail, Star, Image as ImageIcon, X, ShieldCheck, Award, ThumbsUp, Share2, BadgeCheck } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useNav } from '@/lib/nav';
 import { fetchProfessionalById } from '@/lib/queries';
@@ -83,7 +83,7 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
       if (navigator.share) await navigator.share({ title: `Perfil de ${p.full_name} | ProntObra`, url });
       else {
         await navigator.clipboard.writeText(url);
-        setShareMessage('Link do perfil copiado.');
+        setShareMessage('Link copiado!');
       }
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -120,7 +120,8 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
                     <span className="flex items-center gap-1"><Clock size={12} /> {p.experience_years} anos de experiência</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <span className="badge bg-blue-50 text-blue-700"><ShieldCheck size={13} /> Verificado</span>
+                    <span className="badge bg-slate-100 text-slate-700"><ShieldCheck size={13} /> Perfil ProntObra</span>
+                    {p.is_featured && <span className="badge bg-orange-50 text-orange-800"><BadgeCheck size={13} /> Destaque VIP</span>}
                     {!!p.certifications?.length && <span className="badge bg-amber-50 text-amber-700"><Award size={13} /> Profissional Certificado</span>}
                     <span className={`badge ${p.is_available === false ? 'bg-gray-100 text-gray-700' : 'bg-green-50 text-green-700'}`}>
                       {p.is_available === false ? 'Agenda ocupada' : 'Disponível Agora · Agenda Livre'}
@@ -130,7 +131,7 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
               </div>
               <div className="flex flex-col items-start gap-2 sm:items-end">
                 {p.avg_rating !== null && <StarRating rating={p.avg_rating} count={p.review_count} size={18} />}
-                {p.is_featured && <span className="badge bg-orange-50 text-orange-700">Profissional em Destaque</span>}
+                {p.is_featured && <span className="badge inline-flex items-center gap-1 bg-orange-50 text-orange-800"><BadgeCheck size={13} /> Destaque VIP</span>}
               </div>
             </div>
           </div>
@@ -235,7 +236,7 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
                     <Mail size={18} /> Enviar e-mail
                   </a>
                 )}
-                <button type="button" onClick={() => void shareProfile()} className="btn-outline w-full"><Share2 size={17} /> Indicar Colega</button>
+                <button type="button" onClick={() => void shareProfile()} className="btn-outline w-full"><Share2 size={17} /> Compartilhar meu Perfil</button>
                 {shareMessage && <p role="status" className="text-xs text-slate-500">{shareMessage}</p>}
               </div>
 
