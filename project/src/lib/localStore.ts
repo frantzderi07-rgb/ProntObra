@@ -192,7 +192,8 @@ export function getLocalProfessionals(filters?: { specialty?: string; city?: str
       reviews: [],
       avg_rating: null,
       review_count: 0,
-    }));
+    }))
+    .sort((first, second) => (second.referral_points ?? 0) - (first.referral_points ?? 0));
 }
 
 export function getLocalProfessionalById(id: string): ProfessionalWithStats | null {

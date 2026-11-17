@@ -1,8 +1,8 @@
 /*
-# Prontobra — Schema Inicial
+# ProntObra — Schema Inicial
 
 ## Visão Geral
-Cria o banco de dados da plataforma Prontobra, que conecta profissionais da
+Cria o banco de dados da plataforma ProntObra, que conecta profissionais da
 construção civil com clientes e empresas na região de Andradina (SP) e cidades
 vizinhas (incluindo Três Lagoas e Brasilândia no MS).
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User as UserIcon, Briefcase, FileText, Image as ImageIcon, MessageCircle, Plus, Trash2, Check, X, Clock, Bot } from 'lucide-react';
+import { User as UserIcon, Briefcase, FileText, Image as ImageIcon, MessageCircle, Plus, Trash2, Check, X, Clock, Bot, BadgeCheck, Download, Share2, Copy, Gift, Star, QrCode } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useNav } from '@/lib/nav';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -51,6 +51,10 @@ export default function DashboardPage() {
   const [whatsappRecommendations, setWhatsappRecommendations] = useState(false);
   const [savingWhatsApp, setSavingWhatsApp] = useState(false);
   const [whatsappMessage, setWhatsappMessage] = useState('');
+  const [referralCount, setReferralCount] = useState(0);
+  const [referralMessage, setReferralMessage] = useState('');
+  const [copyMessage, setCopyMessage] = useState('');
+  const [qrDownloadError, setQrDownloadError] = useState('');
 
   const isProfessional = profile?.user_type === 'professional';
   const isCompany = profile?.user_type === 'company';
@@ -123,6 +127,29 @@ export default function DashboardPage() {
       }
     }
   }, [user, profile, isCompany, isProfessional]);
+
+  useEffect(() => {
+    if (!user || !isSupabaseConfigured || getActiveLocalUser()) {
+      setReferralCount(0);
+      return;
+    }
+    let active = true;
+    void supabase.from('indicacoes')
+      .select('id', { count: 'exact', head: true })
+      .eq('indicador_user_id', user.id)
+      .eq('status', 'confirmada')
+      .then(({ count, error }) => {
+        if (!active) return;
+        if (error) {
+          console.error('Não foi possível carregar as indicações:', error);
+          setReferralMessage('Não foi possível carregar o contador. Confira se a migration de indicações foi aplicada.');
+          return;
+        }
+        setReferralCount(count ?? 0);
+        setReferralMessage('');
+      });
+    return () => { active = false; };
+  }, [user]);
 
   if (!user || !profile) {
     return (
@@ -306,6 +333,48 @@ export default function DashboardPage() {
     setSavingWhatsApp(false);
   };
 
+  const publicProfileUrl = new URL(`/profissionais/${encodeURIComponent(profile.id)}`, window.location.origin).toString();
+  const referralUrl = new URL('/', window.location.origin);
+  referralUrl.searchParams.set('ref', user.id);
+  const referralLink = referralUrl.toString();
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&format=png&data=${encodeURIComponent(publicProfileUrl)}`;
+  const sealLabel = isProfessional ? 'Profissional cadastrado' : isCompany ? 'Empresa cadastrada' : 'Cliente cadastrado';
+  const referralPoints = referralCount * 10;
+
+  const downloadProfileQr = async () => {
+    setQrDownloadError('');
+    try {
+      const response = await fetch(qrCodeUrl);
+      if (!response.ok) throw new Error('O serviço de QR Code não respondeu.');
+      const objectUrl = URL.createObjectURL(await response.blob());
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `prontobra-${profile.id}-qr.png`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error('Não foi possível baixar o QR Code:', error);
+      setQrDownloadError('Não foi possível baixar o QR Code. Tente novamente ou abra a imagem em uma nova aba.');
+    }
+  };
+
+  const shareProfileOnWhatsApp = () => {
+    const text = `Conheça meu perfil na ProntObra: ${profile.full_name} — ${publicProfileUrl}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const copyReferralLink = async () => {
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      setCopyMessage('Link copiado! Compartilhe com quem precisa de um profissional ou quer trabalhar com obras.');
+    } catch (error) {
+      console.error('Não foi possível copiar o link de indicação:', error);
+      setCopyMessage('Não foi possível copiar automaticamente. Selecione e copie o link acima.');
+    }
+  };
+
   const handleUpdateApplicationStatus = async (appId: string, status: 'accepted' | 'rejected') => {
     await supabase.from('applications').update({ status }).eq('id', appId);
     if (isCompany) {
@@ -426,6 +495,57 @@ export default function DashboardPage() {
                     </div>
                   </>
                 )}
+              </div>
+              <div className="grid gap-5 lg:grid-cols-2">
+                <section className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+                  <div className="flex items-center gap-3 bg-gradient-to-r from-navy-950 to-navy-800 p-5 text-white">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500"><BadgeCheck size={24} /></span>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-orange-200">Selo oficial ProntObra</p>
+                      <h2 className="font-display text-lg font-bold">{sealLabel}</h2>
+                    </div>
+                  </div>
+                  <div className="grid gap-5 p-5 sm:grid-cols-[1fr_auto] sm:items-center">
+                    <div>
+                      <p className="font-display text-xl font-bold text-navy-900">{profile.full_name}</p>
+                      <p className="mt-1 text-sm text-slate-600">{isProfessional ? `${profile.specialty || 'Profissional'} · ${profile.city}/${profile.state}` : isCompany ? `Empresa · ${profile.city}/${profile.state}` : 'Comunidade ProntObra'}</p>
+                      <p className="mt-3 text-xs leading-relaxed text-slate-500">O QR Code leva ao perfil público. Este selo identifica uma conta cadastrada e não substitui verificação documental.</p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button type="button" onClick={() => void downloadProfileQr()} className="btn-outline !py-2 !text-xs"><Download size={15} /> Baixar QR Code</button>
+                        <button type="button" onClick={shareProfileOnWhatsApp} className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-green-700"><Share2 size={15} /> Compartilhar no WhatsApp</button>
+                      </div>
+                      {qrDownloadError && <p role="alert" className="mt-2 text-xs text-red-700">{qrDownloadError}</p>}
+                    </div>
+                    <div className="mx-auto rounded-xl border border-slate-200 bg-white p-2 sm:mx-0">
+                      <img src={qrCodeUrl} alt={`QR Code para o perfil de ${profile.full_name}`} width="140" height="140" loading="lazy" className="h-32 w-32 sm:h-36 sm:w-36" />
+                      <p className="mt-1 flex items-center justify-center gap-1 text-[10px] font-semibold text-slate-500"><QrCode size={12} /> Perfil público</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-600"><Gift size={22} /></span>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-orange-600">Indique e ganhe destaque</p>
+                      <h2 className="font-display text-lg font-bold text-navy-900">Convide sua rede para a ProntObra</h2>
+                      <p className="mt-1 text-sm text-slate-600">Ganhe 10 pontos por cada indicação que concluir o cadastro e confirmar o e-mail.</p>
+                    </div>
+                  </div>
+                  <label className="mt-4 block text-xs font-semibold text-slate-600">Seu link exclusivo
+                    <span className="mt-1 flex flex-col gap-2 sm:flex-row">
+                      <input readOnly value={referralLink} onFocus={(event) => event.currentTarget.select()} className="input-field min-w-0 flex-1 !py-2.5 text-xs" aria-label="Link exclusivo de indicação" />
+                      <button type="button" onClick={() => void copyReferralLink()} className="btn-primary shrink-0 !py-2.5 !text-xs"><Copy size={15} /> Copiar link</button>
+                    </span>
+                  </label>
+                  {copyMessage && <p role="status" className="mt-2 text-xs text-green-700">{copyMessage}</p>}
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div className="rounded-xl bg-slate-50 p-3"><p className="text-2xl font-extrabold text-navy-900">{referralCount}</p><p className="text-xs text-slate-500">indicações confirmadas</p></div>
+                    <div className="rounded-xl bg-orange-50 p-3"><p className="flex items-center gap-1 text-2xl font-extrabold text-orange-700"><Star size={18} fill="currentColor" /> {referralPoints}</p><p className="text-xs text-orange-800">pontos de destaque</p></div>
+                  </div>
+                  {referralMessage && <p role="status" className="mt-3 text-xs text-amber-700">{referralMessage}</p>}
+                  {getActiveLocalUser() && <p className="mt-3 text-xs text-slate-500">O contador e os pontos serão atualizados quando sua conta estiver conectada ao Supabase.</p>}
+                </section>
               </div>
               <section className="card p-5 sm:p-6">
                 <div className="flex items-start gap-3">

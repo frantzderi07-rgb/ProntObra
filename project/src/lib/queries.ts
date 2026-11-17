@@ -11,6 +11,7 @@ export async function fetchProfessionals(filters?: { specialty?: string; city?: 
     .select('*, portfolio_photos(*), reviews(*)')
     .eq('user_type', 'professional')
     .order('is_featured', { ascending: false })
+    .order('referral_points', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (filters?.specialty && filters.specialty !== 'all') {

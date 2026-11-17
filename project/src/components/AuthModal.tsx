@@ -204,7 +204,7 @@ export default function AuthModal({ open, onClose, defaultMode = 'signup', defau
     }
   };
 
-  const title = mode === 'signup' ? 'Crie sua conta' : mode === 'recovery' ? 'Recuperar senha' : 'Entrar na Prontobra';
+  const title = mode === 'signup' ? 'Crie sua conta' : mode === 'recovery' ? 'Recuperar senha' : 'Entrar na ProntObra';
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/60 p-4 backdrop-blur-sm animate-fade-in" onClick={onClose}>
       <div className="relative max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl animate-slide-up" onClick={(e) => e.stopPropagation()}>

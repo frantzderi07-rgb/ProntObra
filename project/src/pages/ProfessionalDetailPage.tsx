@@ -76,7 +76,7 @@ export default function ProfessionalDetailPage({ id }: ProfessionalDetailPagePro
   }
 
   const p = professional;
-  const waLink = p.phone ? `https://wa.me/55${p.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${p.full_name}, encontrei seu perfil na Prontobra e gostaria de solicitar um orçamento.`)}` : null;
+  const waLink = p.phone ? `https://wa.me/55${p.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${p.full_name}, encontrei seu perfil na ProntObra e gostaria de solicitar um orçamento.`)}` : null;
   const shareProfile = async () => {
     const url = `${window.location.origin}/profissionais/${encodeURIComponent(p.id)}`;
     try {

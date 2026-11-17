@@ -33,6 +33,7 @@ export interface Profile {
   whatsapp_feed_enabled?: boolean;
   whatsapp_recommendations_enabled?: boolean;
   tax_document_private?: string;
+  referral_points?: number;
 }
 
 export interface PortfolioPhoto {

@@ -44,7 +44,7 @@ export default function Footer() {
         </div>
 
         <form onSubmit={subscribe} className="mt-9 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div><h2 className="font-display font-bold">Receba novidades da ProntObra</h2><p className="mt-1 text-sm text-white/60">Conteúdos, oportunidades e atualizações da plataforma.</p></div>
+          <div><h2 className="font-display font-bold">Receba novidades da <span translate="no" className="notranslate">ProntObra</span></h2><p className="mt-1 text-sm text-white/60">Conteúdos, oportunidades e atualizações da plataforma.</p></div>
           <div className="flex w-full gap-2 sm:max-w-md"><label htmlFor="newsletter-email" className="sr-only">Seu e-mail</label><input id="newsletter-email" required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/40 focus:border-orange-400" placeholder="voce@email.com" /><button className="btn-primary !px-4 !py-2.5"><Mail size={16} /><span className="hidden sm:inline">Inscrever</span><ArrowRight size={16} /></button></div>
           {notice && <p role="status" className="text-xs text-orange-200 sm:basis-full">{notice}</p>}
         </form>
@@ -56,7 +56,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-7 border-t border-white/10 pt-5 text-center text-xs text-white/50">
-          © 2026 ProntObra — Todos os direitos reservados <span className="mx-1 hidden sm:inline">|</span><br className="sm:hidden" /> Gestão: Frantz Derifond
+          © 2026 <span translate="no" className="notranslate">ProntObra</span> — Todos os direitos reservados <span className="mx-1 hidden sm:inline">|</span><br className="sm:hidden" /> Gestão: Frantz Derifond
         </div>
       </div>
     </footer>

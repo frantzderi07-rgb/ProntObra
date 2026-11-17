@@ -164,17 +164,17 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
             <span
               className={`${titleSizes[size]} font-extrabold tracking-tight text-[#0F172A]`}
             >
-              Pronto
+              Pront
             </span>
             <span
               className={`${titleSizes[size]} font-extrabold tracking-tight text-[#F97316]`}
             >
-              Bra
+              Obra
             </span>
           </div>
 
           <span translate="no" className="notranslate animate-slogan-rtl-loop mt-1.5 text-[11px] sm:text-xs font-semibold tracking-wide text-slate-700">
-            Quem entende de obra, encontra na Prontobra
+            Quem entende de obra, encontra na ProntObra
           </span>
         </div>
       </div>

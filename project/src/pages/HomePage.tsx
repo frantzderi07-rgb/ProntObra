@@ -1,12 +1,15 @@
-import { useState } from 'react';
-import { ArrowRight, Building2, GraduationCap, MapPin, Search, Star, UserRound, MessageCircle } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowRight, BadgePercent, Building2, CheckCircle2, GraduationCap, Handshake, MapPin, MessageCircle, Search, Star, Store, Truck, UserRound, Wrench, X } from 'lucide-react';
 import { useNav } from '@/lib/nav';
-import { BRAZIL_STATES, SPECIALTIES } from '@/lib/types';
+import { BRAZIL_STATES, SPECIALTIES, type Review } from '@/lib/types';
 import type { Job, ProfessionalWithStats } from '@/lib/types';
 import CitySelectorSpMs from '@/components/CitySelectorSpMs';
 import ProfessionalCard from '@/components/ProfessionalCard';
 import QuickVideos from '@/components/QuickVideos';
 import AuthModal from '@/components/AuthModal';
+import { useAuth } from '@/lib/auth';
+import { getActiveLocalUser } from '@/lib/localStore';
+import { isSupabaseConfigured, supabase, whatsappAssistantNumber } from '@/lib/supabase';
 
 interface HomePageProps {
   professionals?: ProfessionalWithStats[];
@@ -19,14 +22,111 @@ const demoProfessionals = [
   { name: 'Roberto Almeida', specialty: 'Pintor · Acabamento Fino', city: 'Ilha Solteira - SP', rating: '4,8', image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=720&q=80' },
 ];
 
+const partnerCategories = [
+  { title: 'Lojas de materiais', detail: 'Apresente materiais, soluções e condições para profissionais e clientes.', icon: Store },
+  { title: 'Locadoras de equipamentos', detail: 'Divulgue andaimes, betoneiras, ferramentas e equipamentos para cada etapa.', icon: Wrench },
+  { title: 'Construtoras e imobiliárias', detail: 'Destaque projetos, imóveis para venda ou locação e novas oportunidades.', icon: Truck },
+];
+
+const sponsorshipTiers = [
+  { name: 'Ouro', detail: 'Máxima visibilidade', className: 'border-amber-300 bg-amber-50 text-amber-900' },
+  { name: 'Prata', detail: 'Presença em destaque', className: 'border-slate-300 bg-slate-50 text-slate-800' },
+  { name: 'Bronze', detail: 'Conexão com a comunidade', className: 'border-orange-200 bg-orange-50 text-orange-900' },
+];
+
+const coupons = [
+  { id: 'cimento-argamassa', discount: '10% OFF', title: 'Cimento e argamassa', partner: 'Lojas de materiais parceiros', detail: 'Desconto sujeito à disponibilidade e às condições da loja.' },
+  { id: 'locacao-betoneira', discount: '15% OFF', title: 'Locação de betoneiras', partner: 'Locadoras parceiras', detail: 'Consulte prazos, região de atendimento e disponibilidade.' },
+  { id: 'ferramentas-obra', discount: 'Condição especial', title: 'Ferramentas para sua obra', partner: 'Parceiros ProntObra', detail: 'Apresente seu código ao parceiro para consultar a oferta vigente.' },
+];
+
+const servicePriceRows = [
+  { category: 'Alvenaria', service: 'Assentamento de tijolos', unit: 'm²', min: 55, max: 110 },
+  { category: 'Acabamento', service: 'Assentamento de piso cerâmico', unit: 'm²', min: 45, max: 100 },
+  { category: 'Pintura', service: 'Pintura de parede (mão de obra)', unit: 'm²', min: 12, max: 30 },
+  { category: 'Elétrica', service: 'Instalação de ponto elétrico', unit: 'ponto', min: 80, max: 180 },
+  { category: 'Hidráulica', service: 'Instalação de ponto hidráulico', unit: 'ponto', min: 100, max: 240 },
+  { category: 'Reforma', service: 'Reforma geral (mão de obra)', unit: 'diária', min: 180, max: 400 },
+];
+
+type PartnerRequest = {
+  tier: string;
+  category: string;
+  companyName: string;
+  cnpj: string;
+  responsibleName: string;
+  whatsapp: string;
+  city: string;
+  state: string;
+  message: string;
+};
+
+const emptyPartnerRequest: PartnerRequest = {
+  tier: '',
+  category: '',
+  companyName: '',
+  cnpj: '',
+  responsibleName: '',
+  whatsapp: '',
+  city: '',
+  state: '',
+  message: '',
+};
+
 export default function HomePage({ professionals = [] }: HomePageProps) {
   const { navigate } = useNav();
+  const { user } = useAuth();
   const [type, setType] = useState('professional');
   const [specialty, setSpecialty] = useState('');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
   const [authType, setAuthType] = useState<'professional' | 'company' | 'client'>('client');
+  const [partnerRequest, setPartnerRequest] = useState<PartnerRequest | null>(null);
+  const [couponCodes, setCouponCodes] = useState<Record<string, string>>({});
+  const [couponMessage, setCouponMessage] = useState('');
+  const [redeemingCoupon, setRedeemingCoupon] = useState<string | null>(null);
+  const [priceCategory, setPriceCategory] = useState('Todas');
+
+  useEffect(() => {
+    if (!user) {
+      setCouponCodes({});
+      return;
+    }
+    if (!isSupabaseConfigured || getActiveLocalUser()) {
+      try {
+        setCouponCodes(JSON.parse(localStorage.getItem(`prontobra:coupons:${user.id}`) ?? '{}') as Record<string, string>);
+      } catch {
+        setCouponCodes({});
+      }
+      return;
+    }
+    let active = true;
+    void supabase.from('cupons_desconto').select('coupon_slug, redemption_code').eq('user_id', user.id)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Não foi possível carregar os cupons resgatados:', error);
+          if (active) setCouponMessage('Não foi possível carregar seus cupons. Tente novamente mais tarde.');
+          return;
+        }
+        if (active) setCouponCodes(Object.fromEntries((data ?? []).map((item) => [item.coupon_slug, item.redemption_code])));
+      });
+    return () => { active = false; };
+  }, [user]);
+
+  const filteredPriceRows = useMemo(
+    () => priceCategory === 'Todas' ? servicePriceRows : servicePriceRows.filter((item) => item.category === priceCategory),
+    [priceCategory],
+  );
+  const reviews = useMemo(() => professionals
+    .flatMap((professional) => (professional.reviews ?? [])
+      .filter((review) => review.comment?.trim())
+      .map((review) => ({ ...review, professionalName: professional.full_name })))
+    .sort((first, second) => second.created_at.localeCompare(first.created_at))
+    .slice(0, 3), [professionals]);
+  const totalReviews = professionals.reduce((total, professional) => total + professional.review_count, 0);
+  const averageRating = professionals.reduce((total, professional) => total + (professional.avg_rating ?? 0) * professional.review_count, 0)
+    / (totalReviews || 1);
 
   const search = () => {
     if (type === 'jobs') navigate({ name: 'jobs', specialty: specialty || undefined, city: city || undefined });
@@ -35,6 +135,53 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
   const openSignup = (userType: 'company' | 'client') => {
     setAuthType(userType);
     setAuthOpen(true);
+  };
+
+  const openPartnerRequest = (tier = '', category = '') => {
+    setPartnerRequest({ ...emptyPartnerRequest, tier, category });
+  };
+
+  const redeemCoupon = async (couponId: string) => {
+    setCouponMessage('');
+    if (!user) {
+      setAuthType('client');
+      setAuthOpen(true);
+      setCouponMessage('Entre ou crie sua conta de cliente para resgatar um cupom.');
+      return;
+    }
+    if (couponCodes[couponId]) return;
+    setRedeemingCoupon(couponId);
+    const code = `PO-${couponId.slice(0, 4).toUpperCase()}-${crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+    if (isSupabaseConfigured && !getActiveLocalUser()) {
+      const { data, error } = await supabase.from('cupons_desconto').insert({
+        user_id: user.id,
+        coupon_slug: couponId,
+        redemption_code: code,
+      }).select('redemption_code').single();
+      if (error) {
+        if (error.code === '23505') {
+          const { data: existing } = await supabase.from('cupons_desconto').select('redemption_code').eq('user_id', user.id).eq('coupon_slug', couponId).maybeSingle();
+          if (existing?.redemption_code) setCouponCodes((current) => ({ ...current, [couponId]: existing.redemption_code }));
+          else setCouponMessage('Este cupom já foi resgatado, mas não foi possível carregar o código. Atualize a página.');
+        } else {
+          console.error('Não foi possível resgatar o cupom:', error);
+          setCouponMessage('Não foi possível resgatar o cupom. Tente novamente.');
+        }
+        setRedeemingCoupon(null);
+        return;
+      }
+      setCouponCodes((current) => ({ ...current, [couponId]: data.redemption_code }));
+    } else {
+      const nextCodes = { ...couponCodes, [couponId]: code };
+      try {
+        localStorage.setItem(`prontobra:coupons:${user.id}`, JSON.stringify(nextCodes));
+        setCouponCodes(nextCodes);
+      } catch (error) {
+        console.error('Não foi possível salvar o cupom neste dispositivo:', error);
+        setCouponMessage('Não foi possível guardar o cupom neste dispositivo. Verifique o espaço disponível e tente novamente.');
+      }
+    }
+    setRedeemingCoupon(null);
   };
 
   return (
@@ -49,7 +196,7 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
                 <MapPin size={14} /> Conectando todo o Brasil
               </span>
               <h1 className="mt-6 max-w-3xl font-display text-4xl font-extrabold leading-tight sm:text-6xl">
-                Quem entende de obra, encontra na <span className="text-orange-400">ProntObra.</span>
+                Quem entende de obra, encontra na <span translate="no" className="notranslate text-orange-400">ProntObra.</span>
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
                 Conectando quem constrói a quem precisa em todo o Brasil.
@@ -122,10 +269,232 @@ export default function HomePage({ professionals = [] }: HomePageProps) {
             </div>
           )}
         </section>
+
+        <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8" aria-labelledby="ecosystem-title">
+          <div className="max-w-3xl">
+            <p className="text-sm font-bold uppercase tracking-wider text-orange-600">Vitrine do ecossistema</p>
+            <h2 id="ecosystem-title" className="mt-2 section-title">Sua marca ao lado de quem constrói.</h2>
+            <p className="mt-2 text-sm text-slate-600">Conheça oportunidades para lojas, locadoras, construtoras e empresas do setor.</p>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {partnerCategories.map(({ title, detail, icon: Icon }) => (
+              <button key={title} type="button" onClick={() => openPartnerRequest('', title)}
+                className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-1 hover:border-orange-400 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600 transition group-hover:bg-orange-500 group-hover:text-white"><Icon size={23} /></span>
+                <span className="mt-4 block font-display font-bold text-navy-900 group-hover:text-orange-700">{title}</span>
+                <span className="mt-2 block text-sm leading-relaxed text-slate-600">{detail}</span>
+                <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-orange-600">Quero ser parceiro <ArrowRight size={16} /></span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-8 rounded-3xl bg-navy-950 p-5 text-white sm:p-8">
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <div><p className="text-sm font-bold uppercase tracking-wider text-orange-300">Cotas de patrocínio</p><h3 className="mt-2 font-display text-2xl font-bold">Uma parceria no tamanho da sua marca.</h3></div>
+              <p className="max-w-md text-sm text-white/65">Escolha a cota que combina com seus objetivos e envie uma solicitação para nossa equipe.</p>
+            </div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {sponsorshipTiers.map((tier) => (
+                <button key={tier.name} type="button" onClick={() => openPartnerRequest(tier.name)}
+                  className={`rounded-2xl border p-5 text-left transition hover:-translate-y-1 hover:border-orange-400 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 ${tier.className}`}>
+                  <span className="text-lg font-extrabold">{tier.name}</span>
+                  <span className="mt-1 block text-sm opacity-75">{tier.detail}</span>
+                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-orange-700">Quero ser parceiro <ArrowRight size={16} /></span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-orange-50/70 py-10" aria-labelledby="coupons-title">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex items-start gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white"><BadgePercent size={23} /></span>
+              <div><p className="text-sm font-bold uppercase tracking-wider text-orange-700">Benefícios para a comunidade</p><h2 id="coupons-title" className="mt-1 section-title">Clube de Descontos ProntObra</h2><p className="mt-2 text-sm text-slate-600">Resgate seu código e consulte os termos e disponibilidade com o parceiro.</p></div>
+            </div>
+            {couponMessage && <p role="status" className="mt-4 rounded-lg bg-white p-3 text-sm text-slate-700 shadow-sm">{couponMessage}</p>}
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {coupons.map((coupon) => {
+                const code = couponCodes[coupon.id];
+                return (
+                  <article key={coupon.id} className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm">
+                    <span className="inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-700">{coupon.discount}</span>
+                    <h3 className="mt-3 font-display text-lg font-bold text-navy-900">{coupon.title}</h3>
+                    <p className="mt-1 text-sm text-slate-500">{coupon.partner}</p>
+                    <p className="mt-3 text-xs leading-relaxed text-slate-500">{coupon.detail}</p>
+                    {code ? (
+                      <p role="status" className="mt-4 flex items-center gap-2 rounded-xl bg-green-50 p-3 font-mono text-sm font-bold text-green-800"><CheckCircle2 size={17} /> {code}</p>
+                    ) : (
+                      <button type="button" onClick={() => void redeemCoupon(coupon.id)} disabled={redeemingCoupon === coupon.id} className="btn-primary mt-4 w-full !py-2.5">
+                        {redeemingCoupon === coupon.id ? 'Gerando código...' : 'Resgatar Cupom'}
+                      </button>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8" aria-labelledby="prices-title">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div><p className="text-sm font-bold uppercase tracking-wider text-orange-600">Referência para planejar</p><h2 id="prices-title" className="mt-2 section-title">Preços médios de serviços</h2><p className="mt-2 max-w-2xl text-sm text-slate-600">Faixas indicativas de mão de obra. Os valores variam conforme região, escopo, materiais e condições da obra.</p></div>
+            <label className="text-sm font-semibold text-navy-800">Filtrar categoria
+              <select value={priceCategory} onChange={(event) => setPriceCategory(event.target.value)} className="input-field mt-1 min-w-48">
+                {['Todas', ...new Set(servicePriceRows.map((item) => item.category))].map((category) => <option key={category}>{category}</option>)}
+              </select>
+            </label>
+          </div>
+          <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <table className="w-full min-w-[600px] text-left text-sm">
+              <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Serviço</th><th className="px-4 py-3">Categoria</th><th className="px-4 py-3">Unidade</th><th className="px-4 py-3">Faixa média</th></tr></thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredPriceRows.map((row) => <tr key={row.service} className="hover:bg-orange-50/50"><td className="px-4 py-3 font-semibold text-navy-800">{row.service}</td><td className="px-4 py-3 text-slate-600">{row.category}</td><td className="px-4 py-3 text-slate-600">{row.unit}</td><td className="px-4 py-3 font-semibold text-orange-700">R$ {row.min}–{row.max}{row.unit === 'diária' ? '/dia' : `/${row.unit}`}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-xs text-slate-500">Valores ilustrativos para referência, não constituem proposta ou garantia de preço.</p>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8" aria-label="Comunidade e avaliações">
+          <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+            <div className="rounded-3xl bg-navy-950 p-6 text-white">
+              <p className="text-sm font-bold uppercase tracking-wider text-orange-300">ProntObra em números</p>
+              <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+                <div><p className="text-2xl font-extrabold">{professionals.length}</p><p className="mt-1 text-[11px] text-white/60">profissionais</p></div>
+                <div><p className="text-2xl font-extrabold">{jobs.length}</p><p className="mt-1 text-[11px] text-white/60">oportunidades</p></div>
+                <div><p className="flex items-center justify-center gap-1 text-2xl font-extrabold"><Star size={17} className="text-orange-300" fill="currentColor" />{totalReviews ? averageRating.toFixed(1).replace('.', ',') : '—'}</p><p className="mt-1 text-[11px] text-white/60">{totalReviews} avaliações</p></div>
+              </div>
+              <div className="mt-5 flex flex-wrap gap-2 border-t border-white/10 pt-4 text-xs text-white/70"><span>Clientes</span><span>·</span><span>Profissionais</span><span>·</span><span>Empresas</span></div>
+            </div>
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wider text-orange-600">Experiências da comunidade</p>
+              <h2 className="mt-2 font-display text-2xl font-bold text-navy-900">Avaliações de quem já está na plataforma</h2>
+              {reviews.length ? <div className="mt-4 grid gap-3 md:grid-cols-3">
+                {reviews.map((review) => <ReviewCard key={review.id} review={review} />)}
+              </div> : <p className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-600">As avaliações dos profissionais aparecerão aqui conforme forem publicadas pela comunidade.</p>}
+            </div>
+          </div>
+        </section>
         <QuickVideos />
       </div>
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultMode="signup" defaultUserType={authType} />
+      {partnerRequest && <PartnerRequestModal initialRequest={partnerRequest} onClose={() => setPartnerRequest(null)} />}
     </>
+  );
+}
+
+function ReviewCard({ review }: { review: Review & { professionalName: string } }) {
+  return (
+    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center gap-1 text-orange-500" aria-label={`Avaliação ${review.rating} de 5`}>
+        {Array.from({ length: 5 }, (_, index) => <Star key={index} size={14} fill={index < review.rating ? 'currentColor' : 'none'} />)}
+      </div>
+      <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-slate-600">“{review.comment}”</p>
+      <p className="mt-3 text-xs font-semibold text-navy-800">{review.reviewer_name} · {review.professionalName}</p>
+    </article>
+  );
+}
+
+function PartnerRequestModal({ initialRequest, onClose }: { initialRequest: PartnerRequest; onClose: () => void }) {
+  const [form, setForm] = useState(initialRequest);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+  const partnerNumber = (import.meta.env.VITE_WHATSAPP_PARTNERS_NUMBER || whatsappAssistantNumber).replace(/\D/g, '');
+  const whatsappUrl = partnerNumber ? `https://wa.me/${partnerNumber}?text=${encodeURIComponent(
+    `Olá! Acabei de enviar uma solicitação de parceria ProntObra.\nEmpresa: ${form.companyName}\nCota: ${form.tier || 'A definir'}\nResponsável: ${form.responsibleName}`,
+  )}` : '';
+
+  const update = (key: keyof PartnerRequest, value: string) => setForm((current) => ({ ...current, [key]: value }));
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError('');
+    if (!isSupabaseConfigured) {
+      setError('O envio de solicitações está temporariamente indisponível. Tente novamente mais tarde.');
+      return;
+    }
+    setLoading(true);
+    const { error: insertError } = await supabase.from('solicitacoes_parceria').insert({
+      nome_empresa: form.companyName.trim(),
+      cnpj: form.cnpj.replace(/\D/g, '') || null,
+      responsavel: form.responsibleName.trim(),
+      whatsapp: form.whatsapp.replace(/\D/g, ''),
+      cidade: form.city.trim(),
+      estado: form.state,
+      categoria: form.category || null,
+      cota: form.tier || null,
+      mensagem: form.message.trim(),
+      status: 'pendente',
+    });
+    setLoading(false);
+    if (insertError) {
+      console.error('Não foi possível salvar a solicitação de parceria:', insertError);
+      setError('Não foi possível enviar a solicitação agora. Confira os dados e tente novamente.');
+      return;
+    }
+    setSaved(true);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-navy-950/70 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="partnership-modal-title" className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-8" onClick={(event) => event.stopPropagation()}>
+        <button type="button" onClick={onClose} aria-label="Fechar" className="absolute right-4 top-4 rounded-lg p-2 text-slate-400 hover:bg-slate-100"><X size={20} /></button>
+        {saved ? (
+          <div className="py-6 text-center">
+            <CheckCircle2 size={48} className="mx-auto text-green-600" />
+            <h2 id="partnership-modal-title" className="mt-4 font-display text-2xl font-bold text-navy-900">Solicitação enviada!</h2>
+            <p className="mt-2 text-sm text-slate-600">Nossa equipe recebeu seus dados e entrará em contato para conversar sobre a parceria.</p>
+            {whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3 font-bold text-white transition hover:bg-green-700 sm:w-auto"><MessageCircle size={18} /> Continuar pelo WhatsApp</a> : <p className="mt-4 text-xs text-slate-500">O WhatsApp de parcerias ainda não está configurado.</p>}
+            <div><button type="button" onClick={onClose} className="btn-outline mt-4">Fechar</button></div>
+          </div>
+        ) : (
+          <>
+            <p className="text-sm font-bold uppercase tracking-wider text-orange-600">Parcerias</p>
+            <h2 id="partnership-modal-title" className="mt-2 font-display text-2xl font-bold text-navy-900">Solicitar Parceria ProntObra</h2>
+            <p className="mt-1 text-sm text-slate-600">Conte um pouco sobre sua empresa. Os campos marcados são obrigatórios.</p>
+            <form onSubmit={(event) => void submit(event)} className="mt-5 grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm font-medium text-navy-700">Nome da Empresa
+                <input required maxLength={120} value={form.companyName} onChange={(event) => update('companyName', event.target.value)} className="input-field mt-1" />
+              </label>
+              <label className="block text-sm font-medium text-navy-700">CNPJ (opcional)
+                <input inputMode="numeric" maxLength={18} value={form.cnpj} onChange={(event) => update('cnpj', event.target.value)} placeholder="00.000.000/0001-00" className="input-field mt-1" />
+              </label>
+              <label className="block text-sm font-medium text-navy-700">Responsável
+                <input required maxLength={120} value={form.responsibleName} onChange={(event) => update('responsibleName', event.target.value)} className="input-field mt-1" />
+              </label>
+              <label className="block text-sm font-medium text-navy-700">WhatsApp
+                <input required type="tel" inputMode="tel" maxLength={20} value={form.whatsapp} onChange={(event) => update('whatsapp', event.target.value)} placeholder="(11) 99999-9999" className="input-field mt-1" />
+              </label>
+              <label className="block text-sm font-medium text-navy-700">Cidade
+                <input required maxLength={100} value={form.city} onChange={(event) => update('city', event.target.value)} className="input-field mt-1" />
+              </label>
+              <label className="block text-sm font-medium text-navy-700">Estado (UF)
+                <select required value={form.state} onChange={(event) => update('state', event.target.value)} className="input-field mt-1">
+                  <option value="">Selecione</option>{BRAZIL_STATES.map(([uf, name]) => <option key={uf} value={uf}>{name} ({uf})</option>)}
+                </select>
+              </label>
+              <label className="block text-sm font-medium text-navy-700">Categoria / segmento
+                <select value={form.category} onChange={(event) => update('category', event.target.value)} className="input-field mt-1">
+                  <option value="">Selecione (opcional)</option>{partnerCategories.map((item) => <option key={item.title}>{item.title}</option>)}
+                  <option>Fabricante</option><option>Instituição de ensino</option><option>Outro</option>
+                </select>
+              </label>
+              <label className="block text-sm font-medium text-navy-700">Cota de patrocínio
+                <select value={form.tier} onChange={(event) => update('tier', event.target.value)} className="input-field mt-1">
+                  <option value="">A definir</option>{sponsorshipTiers.map((tier) => <option key={tier.name}>{tier.name}</option>)}
+                </select>
+              </label>
+              <label className="block text-sm font-medium text-navy-700 sm:col-span-2">Mensagem
+                <textarea required maxLength={1000} rows={4} value={form.message} onChange={(event) => update('message', event.target.value)} className="input-field mt-1 resize-y" placeholder="Conte sobre sua empresa e a parceria que gostaria de propor." />
+              </label>
+              {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:col-span-2">{error}</p>}
+              <button type="submit" disabled={loading} className="btn-primary sm:col-span-2">{loading ? 'Enviando solicitação...' : 'Enviar solicitação'}</button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 

@@ -76,6 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    const referralId = new URLSearchParams(window.location.search).get('ref');
+    if (referralId && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(referralId)) {
+      window.sessionStorage.setItem('prontobra:referrer-user-id', referralId);
+    }
+
     const activeLocalUser = getActiveLocalUser();
     if (activeLocalUser) {
       setUser(activeLocalUser);
@@ -161,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               bio: profileData.bio,
               is_available: profileData.is_available,
               company_cnpj: profileData.company_cnpj,
+              referrer_user_id: window.sessionStorage.getItem('prontobra:referrer-user-id'),
             },
           },
         });
