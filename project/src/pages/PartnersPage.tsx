@@ -1,6 +1,31 @@
 import { useState } from 'react';
 import { ArrowRight, BadgePercent, Building2, Calculator, GraduationCap, Handshake, Store, Truck, Wrench, X } from 'lucide-react';
 import { useNav } from '@/lib/nav';
+import { BRAZIL_STATES } from '@/lib/types';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+
+const partnershipTypeOptions = [
+  { value: 'Patrocinador (Ouro, Prata ou Bronze)', label: 'Patrocinador Ouro/Prata/Bronze' },
+  { value: 'Clube de Descontos / Cupons', label: 'Clube de Descontos / Cupons' },
+  { value: 'Loja Parceira / Divulgação', label: 'Loja Parceira / Divulgação' },
+  { value: 'Outro', label: 'Outro' },
+];
+
+function formatCnpj(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 14);
+  return digits
+    .replace(/^(\d{2})(\d)/, '$1.$2')
+    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2');
+}
+
+function formatPhone(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 2) return digits ? `(${digits}` : '';
+  if (digits.length < 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
 
 const benefits = [
   { title: 'Vantagens para clientes', description: 'Estruture condições especiais e descontos para a comunidade ProntObra conforme o acordo de parceria.', icon: BadgePercent },
@@ -79,35 +104,103 @@ function PartnerContactModal({ onClose }: { onClose: () => void }) {
   const [organization, setOrganization] = useState('');
   const [email, setEmail] = useState('');
   const [segment, setSegment] = useState('Loja de materiais de construção');
+  const [cnpj, setCnpj] = useState('');
+  const [phone, setPhone] = useState('');
+  const [cityState, setCityState] = useState('');
+  const [partnershipType, setPartnershipType] = useState('');
+  const [tier, setTier] = useState('');
+  const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const subject = encodeURIComponent(`Parceria ProntObra: ${organization}`);
-    const body = encodeURIComponent(`Olá, administração da ProntObra!\n\nTenho interesse em conversar sobre uma parceria.\n\nNome: ${name}\nOrganização: ${organization}\nSegmento: ${segment}\nE-mail: ${email}`);
-    window.location.href = `mailto:contato@prontobra.com.br?subject=${subject}&body=${body}`;
+    setError('');
+    const cnpjDigits = cnpj.replace(/\D/g, '');
+    const phoneDigits = phone.replace(/\D/g, '');
+    const locationMatch = cityState.trim().match(/^(.+?)\s*[-,]\s*([A-Za-z]{2})$/);
+    if (cnpjDigits.length !== 14) {
+      setError('Informe um CNPJ com 14 dígitos.');
+      return;
+    }
+    if (phoneDigits.length !== 11) {
+      setError('Informe um WhatsApp com DDD e 11 dígitos.');
+      return;
+    }
+    if (!locationMatch) {
+      setError('Informe a cidade e a UF. Exemplo: Andradina - SP.');
+      return;
+    }
+    const state = locationMatch[2].toUpperCase();
+    if (!BRAZIL_STATES.some(([uf]) => uf === state)) {
+      setError('Informe uma UF válida. Exemplo: Andradina - SP.');
+      return;
+    }
+    if (!isSupabaseConfigured) {
+      setError('O envio está temporariamente indisponível. Tente novamente mais tarde.');
+      return;
+    }
+
+    setLoading(true);
+    const { error: insertError } = await supabase.from('solicitacoes_parceria').insert({
+      nome_empresa: organization.trim(),
+      cnpj: cnpjDigits,
+      responsavel: name.trim(),
+      email: email.trim(),
+      whatsapp: phoneDigits,
+      cidade: locationMatch[1].trim(),
+      estado: state,
+      categoria: segment,
+      tipo_parceria: partnershipType,
+      cota: partnershipType === partnershipTypeOptions[0].value ? tier || null : null,
+      mensagem: message.trim(),
+    });
+    setLoading(false);
+    if (insertError) {
+      console.error('Não foi possível registrar a solicitação de parceria:', insertError);
+      setError(insertError.message.includes('Aguarde alguns minutos')
+        ? 'Aguarde alguns minutos antes de enviar outra proposta.'
+        : 'Não foi possível enviar sua proposta. Confira os dados e tente novamente.');
+      return;
+    }
     setSent(true);
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-navy-950/70 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="partner-contact-title" className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl sm:p-8" onClick={(event) => event.stopPropagation()}>
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-navy-950/70 p-2 backdrop-blur-sm sm:p-4" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="partner-contact-title" className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:p-8" onClick={(event) => event.stopPropagation()}>
         <button type="button" onClick={onClose} aria-label="Fechar" className="absolute right-4 top-4 rounded-lg p-2 text-gray-400 hover:bg-gray-100"><X size={20} /></button>
         {sent ? (
           <div className="py-7 text-center">
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-600"><Handshake size={27} /></span>
-            <h2 id="partner-contact-title" className="mt-4 font-display text-xl font-bold text-navy-900">Contato preparado</h2>
-            <p className="mt-2 text-sm text-gray-600">Seu aplicativo de e-mail foi solicitado com os dados da parceria. Se não abriu, escreva para contato@prontobra.com.br.</p>
+            <h2 id="partner-contact-title" className="mt-4 font-display text-xl font-bold text-navy-900">Proposta recebida!</h2>
+            <p className="mt-2 text-sm text-gray-600">Recebemos sua proposta! Nossa equipe entrará em contato em breve.</p>
             <button type="button" onClick={onClose} className="btn-primary mt-5">Concluir</button>
           </div>
         ) : (
           <>
             <span className="text-sm font-bold uppercase tracking-wider text-orange-600">Fale com a administração</span>
             <h2 id="partner-contact-title" className="mt-2 font-display text-2xl font-bold text-navy-900">Vamos conversar sobre parceria?</h2>
-            <form onSubmit={submit} className="mt-5 space-y-4">
+            <form onSubmit={(event) => void submit(event)} className="mt-5 grid gap-4 sm:grid-cols-2">
               <label className="block text-sm font-medium text-navy-700">Seu nome<input required value={name} onChange={(event) => setName(event.target.value)} className="input-field mt-1" /></label>
               <label className="block text-sm font-medium text-navy-700">Loja ou organização<input required value={organization} onChange={(event) => setOrganization(event.target.value)} className="input-field mt-1" /></label>
               <label className="block text-sm font-medium text-navy-700">E-mail para retorno<input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="input-field mt-1" /></label>
+              <label className="block text-sm font-medium text-navy-700">CNPJ da Empresa
+                <input required inputMode="numeric" autoComplete="on" maxLength={18} value={cnpj} onChange={(event) => setCnpj(formatCnpj(event.target.value))} placeholder="00.000.000/0000-00" className="input-field mt-1" />
+              </label>
+              <label className="block text-sm font-medium text-navy-700">WhatsApp / Telefone
+                <input required type="tel" inputMode="tel" autoComplete="tel" maxLength={15} value={phone} onChange={(event) => setPhone(formatPhone(event.target.value))} placeholder="(00) 00000-0000" className="input-field mt-1" />
+              </label>
+              <label className="block text-sm font-medium text-navy-700">Cidade e Estado (UF)
+                <input required maxLength={120} value={cityState} onChange={(event) => setCityState(event.target.value)} placeholder="Andradina - SP" className="input-field mt-1" />
+              </label>
+              <label className="block text-sm font-medium text-navy-700">Tipo de Parceria
+                <select required value={partnershipType} onChange={(event) => setPartnershipType(event.target.value)} className="input-field mt-1">
+                  <option value="">Selecione</option>
+                  {partnershipTypeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
+              </label>
               <label className="block text-sm font-medium text-navy-700">Segmento
                 <select value={segment} onChange={(event) => setSegment(event.target.value)} className="input-field mt-1">
                   <option>Loja de materiais de construção</option>
@@ -118,7 +211,21 @@ function PartnerContactModal({ onClose }: { onClose: () => void }) {
                   <option>Outro</option>
                 </select>
               </label>
-              <button type="submit" className="btn-primary w-full"><Handshake size={17} /> Enviar contato</button>
+              {partnershipType === partnershipTypeOptions[0].value && (
+                <label className="block text-sm font-medium text-navy-700">Cota de patrocínio
+                  <select value={tier} onChange={(event) => setTier(event.target.value)} className="input-field mt-1">
+                    <option value="">A definir</option>
+                    <option value="Ouro">Ouro</option>
+                    <option value="Prata">Prata</option>
+                    <option value="Bronze">Bronze</option>
+                  </select>
+                </label>
+              )}
+              <label className="block text-sm font-medium text-navy-700 sm:col-span-2">Conte um pouco sobre sua proposta
+                <textarea required maxLength={1000} rows={4} value={message} onChange={(event) => setMessage(event.target.value)} className="input-field mt-1 resize-y" placeholder="Conte sobre sua empresa e a parceria que gostaria de propor." />
+              </label>
+              {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:col-span-2">{error}</p>}
+              <button type="submit" disabled={loading} className="btn-primary w-full sm:col-span-2"><Handshake size={17} /> {loading ? 'Enviando proposta...' : 'Enviar proposta'}</button>
             </form>
           </>
         )}
