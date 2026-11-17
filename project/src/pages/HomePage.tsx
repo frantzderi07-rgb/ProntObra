@@ -110,9 +110,35 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
   const [partnerRequest, setPartnerRequest] = useState<PartnerRequest | null>(null);
   const [vipPlansOpen, setVipPlansOpen] = useState(false);
   const [couponCodes, setCouponCodes] = useState<Record<string, string>>({});
+  const [availableCoupons, setAvailableCoupons] = useState(coupons);
   const [couponMessage, setCouponMessage] = useState('');
   const [redeemingCoupon, setRedeemingCoupon] = useState<string | null>(null);
   const [priceCategory, setPriceCategory] = useState('Todas');
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    let active = true;
+    void supabase.from('cupons')
+      .select('slug, discount, title, partner, detail')
+      .order('title')
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          console.error('Não foi possível carregar os cupons ativos:', error);
+          setAvailableCoupons([]);
+          setCouponMessage('Não foi possível carregar os cupons ativos. Tente novamente mais tarde.');
+          return;
+        }
+        setAvailableCoupons((data ?? []).map((coupon) => ({
+          id: coupon.slug,
+          discount: coupon.discount,
+          title: coupon.title,
+          partner: coupon.partner,
+          detail: coupon.detail,
+        })));
+      });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -182,12 +208,10 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
     }
     if (couponCodes[couponId]) return;
     setRedeemingCoupon(couponId);
-    const code = `PO-${couponId.slice(0, 4).toUpperCase()}-${crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()}`;
     if (isSupabaseConfigured && !getActiveLocalUser()) {
       const { data, error } = await supabase.from('cupons_desconto').insert({
         user_id: user.id,
         coupon_slug: couponId,
-        redemption_code: code,
       }).select('redemption_code').single();
       if (error) {
         if (error.code === '23505') {
@@ -203,6 +227,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
       }
       setCouponCodes((current) => ({ ...current, [couponId]: data.redemption_code }));
     } else {
+      const code = `PO-${couponId.slice(0, 4).toUpperCase()}-${crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()}`;
       const nextCodes = { ...couponCodes, [couponId]: code };
       try {
         localStorage.setItem(`prontobra:coupons:${user.id}`, JSON.stringify(nextCodes));
@@ -368,7 +393,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
             </div>
             {couponMessage && <p role="status" className="mt-4 rounded-lg bg-white p-3 text-sm text-slate-700 shadow-sm">{couponMessage}</p>}
             <div className="mt-6 grid gap-4 md:grid-cols-3">
-              {coupons.map((coupon) => {
+              {availableCoupons.map((coupon) => {
                 const code = couponCodes[coupon.id];
                 return (
                   <article key={coupon.id} className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm">
@@ -491,12 +516,13 @@ function PartnerRequestModal({ initialRequest, onClose }: { initialRequest: Part
       tipo_parceria: form.partnershipType,
       cota: form.tier || null,
       mensagem: form.message.trim(),
-      status: 'pendente',
     });
     setLoading(false);
     if (insertError) {
       console.error('Não foi possível salvar a solicitação de parceria:', insertError);
-      setError('Não foi possível enviar a solicitação agora. Confira os dados e tente novamente.');
+      setError(insertError.message.includes('Aguarde alguns minutos')
+        ? 'Aguarde alguns minutos antes de enviar outra proposta.'
+        : 'Não foi possível enviar a solicitação agora. Confira os dados e tente novamente.');
       return;
     }
     setSaved(true);
