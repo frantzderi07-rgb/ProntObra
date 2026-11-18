@@ -8,6 +8,33 @@ const categories = [
   { title: 'Construtoras e imobiliárias', detail: 'Destaque projetos, imóveis para venda ou locação e novas oportunidades.', icon: Truck, image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=960&q=80' },
 ];
 
+const partnerSlides = [
+  {
+    category: 'Lojas de materiais',
+    badge: '🏪 Lojas de Materiais',
+    caption: 'Divulgue seu estoque, ofertas e catálogos para quem está construindo.',
+    image: 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=1200&q=85',
+    fallback: 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=1200&q=85',
+    alt: 'Loja de materiais para construção',
+  },
+  {
+    category: 'Locadoras de equipamentos',
+    badge: '🚜 Locadoras de Equipamentos',
+    caption: 'Aumente a locação de máquinas, andaimes e ferramentas na sua região.',
+    image: 'https://images.unsplash.com/photo-1581092918056-0c4c3a3f7f6f?auto=format&fit=crop&w=1200&q=85',
+    fallback: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85',
+    alt: 'Equipamentos disponíveis para locação em uma obra',
+  },
+  {
+    category: 'Construtoras e imobiliárias',
+    badge: '🏢 Construtoras e Imobiliárias',
+    caption: 'Conecte seus empreendimentos e obras a profissionais qualificados.',
+    image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85',
+    fallback: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=85',
+    alt: 'Empreendimento imobiliário em construção',
+  },
+];
+
 const brandBenefits = [
   { title: 'Mais visibilidade', detail: 'Apresente sua marca a quem planeja, executa e transforma obras.', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80', icon: Building2 },
   { title: 'Conexões relevantes', detail: 'Aproxime seus produtos e serviços dos profissionais da construção.', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80', icon: Handshake },
@@ -43,18 +70,30 @@ const sponsorshipTiers = [
 
 export default function PartnersPage() {
   const [request, setRequest] = useState<{ category: string; tier: string } | null>(null);
-  const [activePillar, setActivePillar] = useState(0);
+  const [activeSlide, setActiveSlide] = useState(0);
   const openRequest = (category = '', tier = '') => setRequest({ category, tier });
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setActivePillar((current) => (current + 1) % categories.length);
-    }, 2600);
-    return () => window.clearInterval(intervalId);
-  }, []);
+    const timeoutId = window.setTimeout(() => {
+      setActiveSlide((current) => (current + 1) % partnerSlides.length);
+    }, 3500);
+    return () => window.clearTimeout(timeoutId);
+  }, [activeSlide]);
 
   return (
     <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
+      <style>{`
+        @keyframes partnerKenBurns {
+          from { transform: scale(1); }
+          to { transform: scale(1.12); }
+        }
+        .partner-carousel-kenburns {
+          animation: partnerKenBurns 3.5s ease-out both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .partner-carousel-kenburns { animation: none; }
+        }
+      `}</style>
       <section className="overflow-hidden bg-[#f8f5ef]">
         <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-16">
           <div className="motion-safe:animate-slide-up">
@@ -66,40 +105,54 @@ export default function PartnersPage() {
             </button>
           </div>
           <div className="relative mx-auto h-[300px] w-full max-w-xl overflow-hidden rounded-[2rem] bg-navy-900 shadow-2xl motion-safe:animate-slide-up sm:h-[390px]">
-            <img
-              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
-              alt="Equipe trabalhando em uma obra"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              poster="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
-              aria-label="Vídeo de apresentação do ecossistema da construção civil"
-              className="absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
-            >
-              <source src="https://videos.pexels.com/video-files/3195394/3195394-hd_1920_1080_25fps.mp4" type="video/mp4" />
-            </video>
-            <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/10 to-navy-950/20" />
-            <div className="absolute inset-x-3 bottom-3 flex flex-wrap justify-center gap-2 sm:inset-x-5 sm:bottom-5">
-              {[
-                { title: 'Lojas de Materiais', icon: Store },
-                { title: 'Locadoras de Equipamentos', icon: Wrench },
-                { title: 'Construtoras e Imobiliárias', icon: Building2 },
-              ].map(({ title, icon: Icon }, index) => (
-                <span
-                  key={title}
-                  aria-current={activePillar === index ? 'true' : undefined}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold shadow-lg transition duration-500 sm:text-sm ${
-                    activePillar === index
-                      ? 'scale-[1.03] border-orange-300 bg-[#F97316] text-white'
-                      : 'border-white/60 bg-white/90 text-navy-900'
+            {partnerSlides.map((slide, index) => {
+              const isActive = activeSlide === index;
+              return (
+                <button
+                  key={slide.category}
+                  type="button"
+                  aria-label={`Solicitar parceria: ${slide.category}`}
+                  aria-hidden={!isActive}
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={() => openRequest(slide.category)}
+                  className={`absolute inset-0 h-full w-full text-left transition-opacity duration-1000 ease-in-out motion-reduce:transition-none ${
+                    isActive ? 'z-10 opacity-100' : 'pointer-events-none opacity-0'
                   }`}
                 >
-                  <Icon size={16} /> {title}
-                </span>
+                  <img
+                    src={slide.image}
+                    alt={slide.alt}
+                    className={`absolute inset-0 h-full w-full object-cover ${isActive ? 'partner-carousel-kenburns' : ''}`}
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = slide.fallback;
+                    }}
+                  />
+                  <span className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/20 to-navy-950/15" />
+                  <span className="absolute left-4 top-4 rounded-full border border-white/50 bg-white/95 px-3 py-2 text-xs font-bold text-navy-900 shadow-lg sm:left-5 sm:top-5 sm:text-sm">
+                    {slide.badge}
+                  </span>
+                  <span className="absolute bottom-12 left-4 right-4 text-white sm:bottom-14 sm:left-5 sm:right-5">
+                    <span className="block text-sm font-semibold leading-relaxed sm:text-base">{slide.caption}</span>
+                    <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-orange-200">
+                      Conhecer esta categoria <ArrowRight size={14} />
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+            <div className="absolute bottom-3 right-4 z-20 flex items-center gap-2 sm:bottom-4 sm:right-5">
+              {partnerSlides.map((slide, index) => (
+                <button
+                  key={slide.category}
+                  type="button"
+                  aria-label={`Mostrar slide ${index + 1}: ${slide.category}`}
+                  aria-pressed={activeSlide === index}
+                  onClick={() => setActiveSlide(index)}
+                  className={`h-2.5 rounded-full shadow transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900 ${
+                    activeSlide === index ? 'w-7 bg-[#F97316]' : 'w-2.5 bg-white/80 hover:bg-white'
+                  }`}
+                />
               ))}
             </div>
           </div>

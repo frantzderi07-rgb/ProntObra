@@ -108,6 +108,10 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
               src="https://images.unsplash.com/photo-1616610269931-04d58b579ddf?auto=format&fit=crop&w=1200&q=85"
               alt="Pedreiros trabalhando com tijolos em uma obra"
               className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = 'https://images.unsplash.com/photo-1673865641469-34498379d8af?auto=format&fit=crop&w=1200&q=85';
+              }}
             />
             <div className="absolute -left-2 top-5 flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-left-5 sm:top-10 sm:px-4">
               <BadgeCheck size={19} className="text-green-600" /> Perfis Verificados

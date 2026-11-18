@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { ArrowRight, Award, Eye, Handshake, HardHat, HeartHandshake, Lightbulb, LockKeyhole, RotateCcw, ShieldCheck, Store, Target, UserRound, Users } from 'lucide-react';
+import { ArrowRight, Award, Eye, Handshake, HardHat, HeartHandshake, Lightbulb, LockKeyhole, ShieldCheck, Store, Target, UserRound, Users } from 'lucide-react';
 import QuickVideos from '@/components/QuickVideos';
 import { ProntObraHouseIcon } from '@/components/Logo';
 
@@ -131,40 +130,92 @@ export default function AboutPage() {
 }
 
 function BrandLogoAnimation() {
-  const [animationKey, setAnimationKey] = useState(0);
-
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-center shadow-xl backdrop-blur-sm sm:p-7">
-      <div key={animationKey} className="flex min-h-[190px] flex-col items-center justify-center gap-5 overflow-hidden sm:min-h-[230px]">
-        <div className="flex items-center justify-center gap-2 sm:gap-4">
-          <ProntObraHouseIcon className="h-16 w-16 shrink-0 motion-safe:animate-house-arc sm:h-24 sm:w-24" />
-          <h2 aria-label="ProntObra" className="flex font-display text-3xl font-extrabold leading-none tracking-tight sm:text-5xl">
-            {'ProntObra'.split('').map((letter, index) => (
-              <span
-                key={`${letter}-${index}`}
-                style={{ animationDelay: `${1.2 + index * 0.075}s` }}
-                className={`inline-block motion-safe:animate-brand-letter ${index < 5 ? 'text-white' : 'text-[#F97316]'}`}
-              >
-                {letter}
-              </span>
-            ))}
-          </h2>
+    <>
+      <style>{`
+        @keyframes aboutHouseLoop {
+          0%, 2% {
+            opacity: 0;
+            transform: translate3d(clamp(110px, 32vw, 220px), 0, 0) scale(0.72);
+          }
+          10% {
+            opacity: 1;
+            transform: translate3d(clamp(78px, 23vw, 158px), -64px, 0) scale(0.82);
+          }
+          20% {
+            transform: translate3d(0, -104px, 0) scale(0.9);
+          }
+          32% {
+            transform: translate3d(clamp(-28px, -2vw, -6px), -68px, 0) scale(0.94);
+          }
+          44% {
+            transform: translate3d(clamp(-32px, -2.5vw, -7px), 0, 0) scale(0.96);
+          }
+          56% {
+            transform: translate3d(clamp(-20px, -1.5vw, -5px), 50px, 0) scale(0.98);
+          }
+          66%, 86% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+          94%, 100% {
+            opacity: 0;
+            transform: translate3d(clamp(110px, 32vw, 220px), 0, 0) scale(0.72);
+          }
+        }
+        @keyframes aboutSloganLoop {
+          0%, 56% {
+            opacity: 0;
+            transform: translate3d(60px, 0, 0);
+          }
+          68% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
+          86% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
+          94%, 100% {
+            opacity: 0;
+            transform: translate3d(60px, 0, 0);
+          }
+        }
+        .about-brand-house {
+          animation: aboutHouseLoop 6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+          will-change: transform, opacity;
+        }
+        .about-brand-slogan {
+          animation: aboutSloganLoop 6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+          will-change: transform, opacity;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .about-brand-house,
+          .about-brand-slogan {
+            animation: none;
+            opacity: 1;
+            transform: none;
+            will-change: auto;
+          }
+        }
+      `}</style>
+      <div className="rounded-3xl border border-white/60 bg-white/95 p-5 text-center shadow-xl sm:p-7">
+        <div className="flex min-h-[190px] items-center justify-center overflow-visible sm:min-h-[230px]">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <ProntObraHouseIcon className="about-brand-house h-14 w-14 shrink-0 sm:h-24 sm:w-24" />
+            <div className="flex min-w-0 flex-col items-start">
+              <h2 aria-label="ProntObra" className="flex whitespace-nowrap font-display text-2xl font-extrabold leading-none tracking-tight sm:text-5xl">
+                <span className="text-[#0F172A]">Pront</span>
+                <span className="text-[#F97316]">Obra</span>
+              </h2>
+              <p className="about-brand-slogan mt-2 max-w-[170px] font-display text-[10px] font-semibold leading-relaxed text-slate-600 sm:max-w-none sm:whitespace-nowrap sm:text-sm">
+                Quem entende de obra, encontra na ProntObra
+              </p>
+            </div>
+          </div>
         </div>
-        <p
-          style={{ animationDelay: '2.4s' }}
-          className="font-display text-sm font-semibold leading-relaxed text-white/85 motion-safe:animate-brand-slogan sm:text-base"
-        >
-          Quem entende de obra, encontra na ProntObra
-        </p>
       </div>
-      <button
-        type="button"
-        onClick={() => setAnimationKey((current) => current + 1)}
-        className="mt-2 inline-flex items-center gap-2 rounded-xl border border-orange-300/30 bg-orange-500/10 px-4 py-2.5 text-sm font-semibold text-orange-200 transition hover:border-orange-300/60 hover:bg-orange-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
-      >
-        <RotateCcw size={16} /> Repetir animação ↻
-      </button>
-    </div>
+    </>
   );
 }
 
