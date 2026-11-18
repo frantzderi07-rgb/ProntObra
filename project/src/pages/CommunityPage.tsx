@@ -39,7 +39,7 @@ export default function CommunityPage({ professionals = [], jobs = [] }: Communi
             </button>
           </div>
           <div className="relative mx-auto w-full max-w-xl motion-safe:animate-slide-up">
-            <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=85" alt="Equipe analisando um projeto de construção" className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]" />
+            <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=85" alt="Profissionais reunidos em uma obra" className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]" />
             <span className="absolute -left-2 top-5 rounded-2xl border border-white/70 bg-white/95 px-4 py-3 text-sm font-semibold text-navy-900 shadow-lg sm:-left-5 sm:top-10">
               <span className="block text-orange-600">Juntos construímos</span>mais confiança
             </span>

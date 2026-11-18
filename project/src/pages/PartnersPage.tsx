@@ -3,7 +3,7 @@ import { ArrowRight, BadgePercent, Building2, Check, Handshake, PackageCheck, St
 import PartnerRequestModal from '@/components/PartnerRequestModal';
 
 const categories = [
-  { title: 'Lojas de materiais', detail: 'Apresente materiais, soluções e condições para profissionais e clientes.', icon: Store, image: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=960&q=80' },
+  { title: 'Lojas de materiais', detail: 'Apresente materiais, soluções e condições para profissionais e clientes.', icon: Store, image: 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=960&q=80' },
   { title: 'Locadoras de equipamentos', detail: 'Divulgue andaimes, betoneiras, ferramentas e equipamentos para cada etapa.', icon: Wrench, image: 'https://images.unsplash.com/photo-1581092918056-0c4c3a3f7f6f?auto=format&fit=crop&w=960&q=80' },
   { title: 'Construtoras e imobiliárias', detail: 'Destaque projetos, imóveis para venda ou locação e novas oportunidades.', icon: Truck, image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=960&q=80' },
 ];
@@ -15,7 +15,7 @@ const brandBenefits = [
 ];
 
 const catalogItems = [
-  { title: 'Catálogo de materiais', detail: 'Apresente produtos e soluções para diferentes etapas da obra.', icon: PackageCheck, image: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=800&q=80' },
+  { title: 'Catálogo de materiais', detail: 'Apresente produtos e soluções para diferentes etapas da obra.', icon: PackageCheck, image: 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=800&q=80' },
   { title: 'Ofertas da semana', detail: 'Destaque condições especiais e novidades para a comunidade.', icon: BadgePercent, image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80' },
   { title: 'Locação de máquinas e equipamentos', detail: 'Divulgue equipamentos disponíveis para cada tipo de serviço.', icon: Wrench, image: 'https://images.unsplash.com/photo-1581092918056-0c4c3a3f7f6f?auto=format&fit=crop&w=800&q=80' },
 ];
@@ -58,7 +58,7 @@ export default function PartnersPage() {
             </button>
           </div>
           <div className="relative mx-auto w-full max-w-xl motion-safe:animate-slide-up">
-            <img src="https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=1200&q=85" alt="Materiais e ferramentas de construção em loja" className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]" />
+            <img src="https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=1200&q=85" alt="Ferramenta profissional para trabalhos de construção" className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]" />
             <span className="absolute -left-2 top-5 inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-left-5 sm:top-10 sm:px-4">
               <Store size={18} className="text-orange-600" /> Lojas de Materiais
             </span>
@@ -129,7 +129,7 @@ export default function PartnersPage() {
               </button>
             ))}
           </div>
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex justify-start">
             <button type="button" onClick={() => openRequest()} className="btn-primary">
               Cadastrar minha empresa na vitrine <ArrowRight size={17} />
             </button>

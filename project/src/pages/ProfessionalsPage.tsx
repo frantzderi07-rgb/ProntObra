@@ -105,8 +105,8 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
 
           <div className="relative mx-auto w-full max-w-xl motion-safe:animate-slide-up">
             <img
-              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
-              alt="Profissionais trabalhando em uma obra"
+              src="https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=1200&q=85"
+              alt="Profissional técnico trabalhando com equipamentos"
               className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]"
             />
             <div className="absolute -left-2 top-5 flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-left-5 sm:top-10 sm:px-4">

@@ -50,6 +50,7 @@ export default {
         'fade-in': 'fadeIn 0.4s ease-out',
         'slide-up': 'slideUp 0.4s ease-out',
         'slide-down': 'slideDown 0.3s ease-out',
+        'logo-reveal': 'logoReveal 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
       },
       keyframes: {
         fadeIn: {
@@ -63,6 +64,11 @@ export default {
         slideDown: {
           '0%': { opacity: '0', transform: 'translateY(-10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        logoReveal: {
+          '0%': { opacity: '0', transform: 'scale(0.9)' },
+          '70%': { opacity: '1', transform: 'scale(1.02)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         },
       },
     },

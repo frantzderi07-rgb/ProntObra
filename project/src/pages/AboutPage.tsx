@@ -132,16 +132,45 @@ export default function AboutPage() {
 function BrandLogoUploader() {
   const [logo, setLogo] = useState('');
   const [error, setError] = useState('');
+  const [presentation, setPresentation] = useState<LogoPresentation>({ width: 240, frame: 'card' });
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     try {
       setLogo(window.localStorage.getItem('prontobra:brand-logo') ?? '');
+      const savedPresentation = window.localStorage.getItem('prontobra:brand-logo-presentation');
+      if (savedPresentation) {
+        const parsed: unknown = JSON.parse(savedPresentation);
+        if (typeof parsed !== 'object' || parsed === null) throw new Error('Preferências de logotipo inválidas.');
+        const settings = parsed as Record<string, unknown>;
+        if (
+          typeof settings.width !== 'number'
+          || !Number.isFinite(settings.width)
+          || settings.width < 120
+          || settings.width > 340
+          || (settings.frame !== 'none' && settings.frame !== 'card')
+        ) {
+          throw new Error('Preferências de logotipo inválidas.');
+        }
+        setPresentation({ width: settings.width, frame: settings.frame });
+      }
     } catch (storageError) {
-      console.error('Não foi possível carregar o logotipo salvo:', storageError);
-      setError('Não foi possível acessar o armazenamento deste navegador.');
+      console.error('Não foi possível carregar o logotipo e suas preferências:', storageError);
+      setError('Não foi possível carregar as preferências do logotipo neste navegador.');
     }
   }, []);
+
+  const updatePresentation = (updates: Partial<LogoPresentation>) => {
+    const next = { ...presentation, ...updates };
+    setPresentation(next);
+    try {
+      window.localStorage.setItem('prontobra:brand-logo-presentation', JSON.stringify(next));
+      setError('');
+    } catch (storageError) {
+      console.error('Não foi possível salvar as preferências do logotipo:', storageError);
+      setError('Não foi possível salvar esta preferência no navegador.');
+    }
+  };
 
   const handleFile = (file?: File) => {
     setError('');
@@ -175,32 +204,112 @@ function BrandLogoUploader() {
     reader.readAsDataURL(file);
   };
 
+  const removeLogo = () => {
+    try {
+      window.localStorage.removeItem('prontobra:brand-logo');
+      window.localStorage.removeItem('prontobra:brand-logo-presentation');
+      setLogo('');
+      setPresentation({ width: 240, frame: 'card' });
+      setError('');
+    } catch (storageError) {
+      console.error('Não foi possível remover o logotipo salvo:', storageError);
+      setError('Não foi possível remover o logotipo deste navegador.');
+    }
+  };
+
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-sm sm:p-7 motion-safe:animate-fade-in">
-      <div className="flex flex-col items-center gap-4 sm:flex-row">
-        <div className="flex h-40 w-full shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-orange-300/50 bg-white/5 sm:w-48">
-          {logo ? (
-            <img src={logo} alt="Pré-visualização do logotipo ProntObra" className="h-full w-full object-contain p-4" />
-          ) : (
-            <div className="px-4 text-center text-orange-200">
-              <Upload size={30} className="mx-auto" />
-              <p className="mt-3 text-sm font-semibold">Carregar logotipo ProntObra</p>
-            </div>
-          )}
+    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-sm sm:p-7">
+      <div className="flex flex-col items-center gap-5">
+        <div className="flex w-full justify-center p-2">
+          <div
+            className={`group flex min-h-[220px] max-w-full flex-col items-center justify-center gap-3 overflow-hidden p-5 text-center transition duration-500 hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(249,115,22,0.2)] motion-safe:animate-logo-reveal ${presentation.frame === 'card' ? 'rounded-3xl border border-slate-200 bg-white text-navy-900 shadow-lg' : 'rounded-3xl border border-transparent bg-transparent text-white'}`}
+            style={{ width: `${presentation.width}px` }}
+          >
+            {logo ? (
+              <img src={logo} alt="Pré-visualização do logotipo ProntObra" className="max-h-36 w-full max-w-full object-contain transition duration-300 group-hover:scale-[1.02]" />
+            ) : (
+              <div className="text-orange-300">
+                <Upload size={30} className="mx-auto" />
+                <p className="mt-2 text-sm font-semibold">Carregar logotipo ProntObra</p>
+              </div>
+            )}
+            <p className={`font-display text-sm font-semibold leading-relaxed ${presentation.frame === 'card' ? 'text-navy-800' : 'text-white/85'}`}>
+              Quem entende de obra, encontra na ProntObra
+            </p>
+          </div>
         </div>
-        <div className="text-center sm:text-left">
-          <p className="font-display text-lg font-bold">Identidade da marca</p>
-          <p className="mt-1 text-sm leading-relaxed text-white/65">Pré-visualize seu logotipo e mantenha-o salvo neste navegador.</p>
-          <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={(event) => handleFile(event.target.files?.[0])} />
-          <button type="button" onClick={() => inputRef.current?.click()} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#F97316] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600">
-            {logo ? 'Trocar logotipo' : 'Selecionar imagem'} <ArrowRight size={16} />
-          </button>
-          <p className="mt-2 text-xs text-white/50">Imagem até 2 MB · salva apenas neste navegador.</p>
+
+        <div className="w-full border-t border-white/10 pt-5">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <label htmlFor="brand-logo-size" className="flex items-center justify-between gap-3 text-sm font-semibold text-white">
+                <span>Tamanho do logotipo</span>
+                <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-orange-200">{presentation.width}px</span>
+              </label>
+              <input
+                id="brand-logo-size"
+                type="range"
+                min={120}
+                max={340}
+                step={10}
+                value={presentation.width}
+                onChange={(event) => updatePresentation({ width: Number(event.target.value) })}
+                className="mt-3 w-full accent-[#F97316]"
+                aria-valuetext={`${presentation.width} pixels`}
+              />
+              <div className="flex justify-between text-[11px] text-white/50"><span>Compacto</span><span>Destaque</span></div>
+            </div>
+            <fieldset className="min-w-0">
+              <legend className="mb-2 text-sm font-semibold text-white">Estilo de fundo</legend>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  aria-pressed={presentation.frame === 'none'}
+                  onClick={() => updatePresentation({ frame: 'none' })}
+                  className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${presentation.frame === 'none' ? 'border-orange-400 bg-orange-500/15 text-orange-200' : 'border-white/15 text-white/65 hover:border-white/30'}`}
+                >
+                  Sem moldura
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={presentation.frame === 'card'}
+                  onClick={() => updatePresentation({ frame: 'card' })}
+                  className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${presentation.frame === 'card' ? 'border-orange-400 bg-orange-500/15 text-orange-200' : 'border-white/15 text-white/65 hover:border-white/30'}`}
+                >
+                  Card Institucional
+                </button>
+              </div>
+            </fieldset>
+          </div>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => {
+              handleFile(event.target.files?.[0]);
+              event.target.value = '';
+            }}
+          />
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <button type="button" onClick={() => inputRef.current?.click()} className="inline-flex items-center gap-2 rounded-xl bg-[#F97316] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600">
+              <Upload size={16} /> Trocar imagem
+            </button>
+            <button type="button" onClick={removeLogo} disabled={!logo} className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-semibold text-white/70 transition hover:border-red-300/50 hover:bg-red-500/10 hover:text-red-100 disabled:cursor-not-allowed disabled:opacity-40">
+              Remover
+            </button>
+            <p className="text-xs text-white/50">Imagem até 2 MB · preferências salvas neste navegador.</p>
+          </div>
         </div>
       </div>
       {error && <p role="alert" className="mt-4 rounded-lg bg-red-500/15 p-3 text-sm text-red-100">{error}</p>}
     </div>
   );
+}
+
+interface LogoPresentation {
+  width: number;
+  frame: 'none' | 'card';
 }
 
 function ConnectionStep({ number, title, detail, icon: Icon }: { number: string; title: string; detail: string; icon: typeof UserRound }) {
