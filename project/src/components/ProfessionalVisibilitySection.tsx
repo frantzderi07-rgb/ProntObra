@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Award, BadgeCheck, Camera, Check, CheckCircle2, Handshake, Info, MessageCircle, Rocket, Star, X } from 'lucide-react';
-import AuthModal from '@/components/AuthModal';
+import { ArrowRight, Award, BadgeCheck, Camera, Check, CheckCircle2, Handshake, Info, MessageCircle, Rocket, ShieldCheck, Star, TrendingUp, X, Zap } from 'lucide-react';
 
 interface ProfessionalRequest {
   fullName: string;
@@ -25,19 +24,23 @@ function formatPhone(value: string) {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
-export default function ProfessionalVisibilitySection() {
-  const [authOpen, setAuthOpen] = useState(false);
-  const [plansOpen, setPlansOpen] = useState(false);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+interface ProfessionalVisibilitySectionProps {
+  plansOpen: boolean;
+  step: 1 | 2 | 3;
+  onOpenPlans: (step?: 1 | 2) => void;
+  onStepChange: (step: 1 | 2 | 3) => void;
+  onClosePlans: () => void;
+  onSignupRequest: () => void;
+}
 
-  const openPlans = (initialStep: 1 | 2 = 1) => {
-    setStep(initialStep);
-    setPlansOpen(true);
-  };
-  const startSignup = () => {
-    setPlansOpen(false);
-    setAuthOpen(true);
-  };
+export default function ProfessionalVisibilitySection({
+  plansOpen,
+  step,
+  onOpenPlans,
+  onStepChange,
+  onClosePlans,
+  onSignupRequest,
+}: ProfessionalVisibilitySectionProps) {
 
   return (
     <>
@@ -49,7 +52,7 @@ export default function ProfessionalVisibilitySection() {
               <h2 id="vip-plans-title" className="mt-2 section-title">Destaque seu trabalho e conquiste mais obras</h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-700">Crie seu perfil gratuitamente ou ative o Destaque VIP para aparecer no topo das buscas da sua cidade.</p>
             </div>
-            <button type="button" onClick={() => openPlans()} className="btn-outline shrink-0 !border-orange-200 !text-orange-800 hover:!border-orange-400">Comparar planos <ArrowRight size={17} /></button>
+            <button type="button" onClick={() => onOpenPlans()} className="btn-outline shrink-0 !border-orange-200 !text-orange-800 hover:!border-orange-400">Comparar planos <ArrowRight size={17} /></button>
           </div>
           <div className="mt-6 grid items-stretch gap-4 md:grid-cols-2">
             <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-6">
@@ -62,27 +65,33 @@ export default function ProfessionalVisibilitySection() {
                   <li className="flex items-start gap-2"><Check size={18} className="mt-0.5 shrink-0 text-green-600" />Recebimento de contatos diretos de clientes</li>
                 </ul>
               </div>
-              <button type="button" onClick={startSignup} className="btn-outline mt-6 w-full md:mt-auto">Criar perfil grátis</button>
+              <button type="button" onClick={onSignupRequest} className="btn-outline mt-6 w-full md:mt-auto">Criar perfil grátis</button>
             </article>
-            <article className="relative flex h-full flex-col rounded-2xl border-2 border-orange-400 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-6">
-              <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-orange-100 px-3 py-1 text-xs font-bold text-orange-800"><Star size={13} fill="currentColor" /> Mais Escolhido</span>
-              <div>
-                <p className="pr-28 font-display text-xl font-bold text-navy-900">Destaque VIP</p>
-                <p className="mt-1 text-sm font-semibold text-orange-800">Sob consulta</p>
-                <ul className="mt-5 space-y-3 text-sm text-slate-700">
-                  <li className="flex items-start gap-2"><BadgeCheck size={18} className="mt-0.5 shrink-0 text-orange-600" />Selo de Profissional Verificado</li>
-                  <li className="flex items-start gap-2"><Rocket size={18} className="mt-0.5 shrink-0 text-orange-600" />Prioridade no topo das buscas da região</li>
-                  <li className="flex items-start gap-2"><Camera size={18} className="mt-0.5 shrink-0 text-orange-600" />Portfólio de fotos de obras realizadas</li>
-                  <li className="flex items-start gap-2"><Handshake size={18} className="mt-0.5 shrink-0 text-orange-600" />Maior destaque para orçamentos rápidos</li>
-                </ul>
+            <article className="flex h-full flex-col rounded-2xl border-2 border-[#F97316] bg-[#1C1917] p-5 text-white shadow-lg shadow-orange-950/10 transition duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-display text-xl font-bold text-white">Destaque VIP</p>
+                  <p className="mt-1 text-sm font-semibold text-orange-300">Sob consulta</p>
+                </div>
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-orange-400/30 bg-orange-500/15 px-3 py-1 text-xs font-bold text-orange-200"><Star size={13} fill="currentColor" /> Mais Escolhido</span>
               </div>
-              <button type="button" onClick={() => openPlans(2)} className="btn-primary mt-6 w-full md:mt-auto">Quero ser VIP <ArrowRight size={17} /></button>
+              <ul className="mt-5 flex-1 space-y-3 text-sm text-white/85">
+                <li className="flex items-start gap-2"><BadgeCheck size={18} className="mt-0.5 shrink-0 text-[#F97316]" />Selo de Profissional Verificado</li>
+                <li className="flex items-start gap-2"><Rocket size={18} className="mt-0.5 shrink-0 text-[#F97316]" />Prioridade no topo das buscas da região</li>
+                <li className="flex items-start gap-2"><Camera size={18} className="mt-0.5 shrink-0 text-[#F97316]" />Portfólio de fotos de obras realizadas</li>
+                <li className="flex items-start gap-2"><Handshake size={18} className="mt-0.5 shrink-0 text-[#F97316]" />Maior destaque para orçamentos rápidos</li>
+              </ul>
+              <button type="button" onClick={() => onOpenPlans(2)} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#F97316] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-950/20 transition hover:bg-orange-600 active:scale-[0.98]">Quero ser VIP <ArrowRight size={17} /></button>
             </article>
+          </div>
+          <div className="mt-5 grid gap-3 rounded-2xl border border-orange-100 bg-white/80 p-4 text-sm text-slate-700 sm:grid-cols-3">
+            <p className="flex items-center gap-2"><ShieldCheck size={17} className="shrink-0 text-orange-600" />Sem fidelidade</p>
+            <p className="flex items-center gap-2"><Zap size={17} className="shrink-0 text-orange-600" />Ativação rápida via WhatsApp</p>
+            <p className="flex items-center gap-2"><TrendingUp size={17} className="shrink-0 text-orange-600" />Mais contatos na sua região</p>
           </div>
         </div>
       </section>
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultMode="signup" defaultUserType="professional" />
-      {plansOpen && <ProfessionalPlansModal step={step} onStepChange={setStep} onClose={() => setPlansOpen(false)} onFreePlan={() => setPlansOpen(false)} />}
+      {plansOpen && <ProfessionalPlansModal step={step} onStepChange={onStepChange} onClose={onClosePlans} onFreePlan={onClosePlans} />}
     </>
   );
 }
