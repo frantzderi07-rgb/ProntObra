@@ -1,4 +1,5 @@
 import { Award, Eye, Handshake, HeartHandshake, Lightbulb, LockKeyhole, ShieldCheck, Target, Users } from 'lucide-react';
+import QuickVideos from '@/components/QuickVideos';
 
 const principles = [
   {
@@ -20,7 +21,7 @@ const principles = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-slate-50 animate-fade-in">
+    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
       <section className="relative overflow-hidden bg-navy-950 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8">
         <div className="absolute -right-20 -top-24 h-80 w-80 rounded-full bg-orange-500/10 blur-3xl" />
         <div className="relative mx-auto max-w-7xl">
@@ -105,6 +106,7 @@ export default function AboutPage() {
           </a>
         </div>
       </section>
+      <QuickVideos />
     </div>
   );
 }

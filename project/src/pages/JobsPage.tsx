@@ -32,16 +32,16 @@ export default function JobsPage({ initialSpecialty = 'all', initialCity = 'all'
   const clearFilters = () => { setSpecialty('all'); setCity(''); setState(''); };
 
   return (
-    <div className="min-h-screen bg-gray-50 animate-fade-in">
+    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
       <div className="bg-navy-900 py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">Vagas & Imóveis</h1>
-              <p className="mt-1 text-white/70">Oportunidades de trabalho, serviços e imóveis divulgados por parceiros.</p>
+              <p className="mt-1 text-white/70">Encontre mão de obra qualificada e descubra oportunidades para construir sua carreira.</p>
             </div>
             <button onClick={() => navigate({ name: 'post-job' })} className="btn-primary self-start">
-              <Plus size={18} /> Publicar Vaga
+              <Plus size={18} /> Publicar Oportunidade
             </button>
           </div>
         </div>

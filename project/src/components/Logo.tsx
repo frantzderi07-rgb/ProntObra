@@ -173,7 +173,7 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
             </span>
           </div>
 
-          <span translate="no" className="notranslate animate-slogan-rtl-loop mt-1.5 text-[11px] sm:text-xs font-semibold tracking-wide text-slate-700">
+          <span translate="no" className="notranslate animate-slogan-rtl-loop mt-1.5 hidden text-[11px] sm:inline sm:text-xs font-semibold tracking-wide text-slate-700">
             Quem entende de obra, encontra na ProntObra
           </span>
         </div>

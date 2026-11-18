@@ -1,235 +1,127 @@
 import { useState } from 'react';
-import { ArrowRight, BadgePercent, Building2, Calculator, GraduationCap, Handshake, Store, Truck, Wrench, X } from 'lucide-react';
-import { useNav } from '@/lib/nav';
-import { BRAZIL_STATES } from '@/lib/types';
-import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { ArrowRight, BadgePercent, Building2, Check, Handshake, Star, Store, Truck, Wrench } from 'lucide-react';
+import PartnerRequestModal from '@/components/PartnerRequestModal';
 
-const partnershipTypeOptions = [
-  { value: 'Patrocinador (Ouro, Prata ou Bronze)', label: 'Patrocinador Ouro/Prata/Bronze' },
-  { value: 'Clube de Descontos / Cupons', label: 'Clube de Descontos / Cupons' },
-  { value: 'Loja Parceira / Divulgação', label: 'Loja Parceira / Divulgação' },
-  { value: 'Outro', label: 'Outro' },
+const categories = [
+  { title: 'Lojas de materiais', detail: 'Apresente materiais, soluções e condições para profissionais e clientes.', icon: Store, image: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=960&q=80' },
+  { title: 'Locadoras de equipamentos', detail: 'Divulgue andaimes, betoneiras, ferramentas e equipamentos para cada etapa.', icon: Wrench, image: 'https://images.unsplash.com/photo-1581092918056-0c4c3a3f7f6f?auto=format&fit=crop&w=960&q=80' },
+  { title: 'Construtoras e imobiliárias', detail: 'Destaque projetos, imóveis para venda ou locação e novas oportunidades.', icon: Truck, image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=960&q=80' },
 ];
 
-function formatCnpj(value: string) {
-  const digits = value.replace(/\D/g, '').slice(0, 14);
-  return digits
-    .replace(/^(\d{2})(\d)/, '$1.$2')
-    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-    .replace(/\.(\d{3})(\d)/, '.$1/$2')
-    .replace(/(\d{4})(\d)/, '$1-$2');
-}
+const brandBenefits = [
+  { title: 'Mais visibilidade', detail: 'Apresente sua marca a quem planeja, executa e transforma obras.', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80', icon: Building2 },
+  { title: 'Conexões relevantes', detail: 'Aproxime seus produtos e serviços dos profissionais da construção.', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80', icon: Handshake },
+  { title: 'Ofertas para a comunidade', detail: 'Compartilhe novidades, condições e benefícios com clientes e equipes.', image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80', icon: BadgePercent },
+];
 
-function formatPhone(value: string) {
-  const digits = value.replace(/\D/g, '').slice(0, 11);
-  if (digits.length <= 2) return digits ? `(${digits}` : '';
-  if (digits.length < 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-}
-
-const benefits = [
-  { title: 'Vantagens para clientes', description: 'Estruture condições especiais e descontos para a comunidade ProntObra conforme o acordo de parceria.', icon: BadgePercent },
-  { title: 'Presença no ecossistema', description: 'Apresente sua loja, construtora ou instituição a profissionais e clientes que movimentam a construção.', icon: Store },
-  { title: 'Conexão com ferramentas', description: 'Associe sua marca a conteúdos e à Calculadora de Materiais da área Para Aprender.', icon: Calculator },
+const sponsorshipTiers = [
+  {
+    name: 'Ouro',
+    badge: 'Máximo Destaque',
+    benefits: ['Logo na página inicial', 'Selo Oficial Parceiro Ouro', 'Divulgação prioritária de ofertas'],
+    className: 'border-amber-300 bg-amber-50 text-amber-950',
+  },
+  {
+    name: 'Prata',
+    badge: '',
+    benefits: ['Destaque na categoria', 'Selo Parceiro Verificado', 'Link direto para WhatsApp / catálogo'],
+    className: 'border-slate-300 bg-slate-50 text-slate-900',
+  },
+  {
+    name: 'Bronze',
+    badge: '',
+    benefits: ['Presença fixa na Vitrine', 'Perfil comercial completo', 'Contato direto com profissionais'],
+    className: 'border-orange-200 bg-orange-50 text-orange-950',
+  },
 ];
 
 export default function PartnersPage() {
-  const { navigate } = useNav();
-  const [contactOpen, setContactOpen] = useState(false);
+  const [request, setRequest] = useState<{ category: string; tier: string } | null>(null);
+  const openRequest = (category = '', tier = '') => setRequest({ category, tier });
 
   return (
-    <div className="min-h-screen bg-slate-50 animate-fade-in">
-      <section className="bg-navy-950 px-4 py-14 text-white sm:px-6 sm:py-16 lg:px-8">
+    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
+      <section className="relative isolate overflow-hidden bg-navy-950 px-4 py-14 text-white sm:px-6 sm:py-16 lg:px-8">
+        <div className="absolute inset-0 -z-10 bg-cover bg-center opacity-25" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=85')" }} />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950 via-navy-950/90 to-navy-900/65" />
         <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-8">
+          <div className="motion-safe:animate-slide-up lg:col-span-8">
             <span className="badge border border-orange-400/30 bg-orange-500/10 text-orange-300"><Handshake size={14} /> Programa de Parcerias</span>
-            <h1 className="mt-5 max-w-3xl font-display text-4xl font-extrabold leading-tight sm:text-5xl">Lojas Parceiras & Fabricantes</h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/70">Aproxime sua marca de quem planeja, executa e transforma obras em todo o Brasil.</p>
-            <button type="button" onClick={() => setContactOpen(true)} className="btn-primary mt-7"><Handshake size={17} /> Quero Ser Loja Parceira</button>
+            <h1 className="mt-5 max-w-3xl font-display text-4xl font-extrabold leading-tight sm:text-5xl">Sua marca ao lado de quem constrói.</h1>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/75">Aproxime sua marca de profissionais, clientes e empresas que movimentam a construção civil em todo o Brasil.</p>
           </div>
           <div className="hidden justify-center lg:col-span-4 lg:flex">
-            <div className="flex h-48 w-48 items-center justify-center rounded-full border border-orange-400/20 bg-orange-500/10 text-orange-400"><Building2 size={76} strokeWidth={1.3} /></div>
+            <div className="flex h-48 w-48 items-center justify-center rounded-full border border-orange-400/30 bg-orange-500/10 text-orange-300"><Building2 size={76} strokeWidth={1.3} /></div>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-7 max-w-2xl">
-          <p className="text-sm font-bold uppercase tracking-wider text-orange-600">Crescemos em parceria</p>
-          <h2 className="mt-2 section-title">Mais conexões entre materiais, conhecimento e trabalho.</h2>
+          <p className="text-sm font-bold uppercase tracking-wider text-orange-700">Benefícios para marcas parceiras</p>
+          <h2 className="mt-2 section-title">Uma parceria que aproxima sua marca do setor.</h2>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
-          {benefits.map(({ title, description, icon: Icon }) => (
-            <article key={title} className="card p-6">
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600"><Icon size={23} /></span>
-              <h3 className="mt-4 font-display text-lg font-bold text-navy-900">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-600">{description}</p>
+          {brandBenefits.map(({ title, detail, image, icon: Icon }, index) => (
+            <article key={title} className="group relative isolate flex min-h-64 flex-col justify-end overflow-hidden rounded-2xl p-5 text-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl motion-safe:animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+              <img src={image} alt="" loading="lazy" className="absolute inset-0 -z-20 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-navy-950/95 via-navy-950/45 to-transparent" />
+              <span className="mb-auto flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500 text-white"><Icon size={22} /></span>
+              <h3 className="mt-8 font-display text-xl font-bold">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/75">{detail}</p>
             </article>
           ))}
         </div>
 
-        <div className="mt-10">
-          <div className="mb-5"><p className="text-sm font-bold uppercase tracking-wider text-orange-600">Vitrine do ecossistema</p><h2 className="mt-2 font-display text-2xl font-bold text-navy-900">Sua marca ao lado de quem constrói.</h2></div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <PartnerCategory icon={Store} title="Lojas de materiais" detail="Apresente materiais, soluções e condições para profissionais e clientes." />
-            <PartnerCategory icon={Wrench} title="Locadoras de equipamentos" detail="Divulgue andaimes, betoneiras, ferramentas e equipamentos para cada etapa." />
-            <PartnerCategory icon={Truck} title="Construtoras e imobiliárias" detail="Destaque projetos, imóveis para venda ou locação e novas oportunidades." />
+        <div id="vitrine" className="mt-14 scroll-mt-24">
+          <div className="mb-6 max-w-2xl">
+            <p className="text-sm font-bold uppercase tracking-wider text-orange-700">Vitrine do ecossistema</p>
+            <h2 className="mt-2 font-display text-2xl font-bold text-navy-900 sm:text-3xl">Quem pode participar?</h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">Selecione o segmento para abrir a solicitação com a categoria já preenchida.</p>
           </div>
-        </div>
-        <div className="mt-8 rounded-3xl bg-navy-950 p-6 text-white sm:p-8">
-          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center"><div><p className="text-sm font-bold uppercase tracking-wider text-orange-300">Cotas de patrocínio</p><h2 className="mt-2 font-display text-2xl font-bold">Uma parceria no tamanho da sua marca.</h2></div><button type="button" onClick={() => setContactOpen(true)} className="btn-primary shrink-0">Quero Ser Parceiro <ArrowRight size={16} /></button></div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">{[['Ouro', 'Máxima visibilidade'], ['Prata', 'Presença em destaque'], ['Bronze', 'Conexão com a comunidade']].map(([tier, detail]) => <div key={tier} className="rounded-2xl border border-white/10 bg-white/5 p-4"><span className="text-lg font-extrabold text-orange-300">{tier}</span><p className="mt-1 text-sm text-white/65">{detail}</p></div>)}</div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {categories.map(({ title, detail, icon: Icon }, index) => (
+              <button key={title} type="button" onClick={() => openRequest(title)}
+                className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:border-orange-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 motion-safe:animate-slide-up"
+                style={{ animationDelay: `${index * 100}ms` }}>
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600 transition group-hover:bg-orange-500 group-hover:text-white"><Icon size={23} /></span>
+                <span className="mt-4 block font-display font-bold text-navy-900">{title}</span>
+                <span className="mt-2 block text-sm leading-relaxed text-slate-600">{detail}</span>
+              </button>
+            ))}
+          </div>
+          <div className="mt-6 flex justify-center">
+            <button type="button" onClick={() => openRequest()} className="btn-primary">
+              Cadastrar minha empresa na vitrine <ArrowRight size={17} />
+            </button>
+          </div>
         </div>
 
-        <div className="mt-8 flex flex-col items-start justify-between gap-5 rounded-3xl bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
-          <div className="flex items-start gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-orange-400"><GraduationCap size={24} /></span>
-            <div><h3 className="font-display text-xl font-bold text-navy-900">Conheça a Calculadora de Materiais</h3><p className="mt-1 text-sm text-gray-600">Veja a experiência prática que pode apoiar clientes e profissionais no planejamento da obra.</p></div>
+        <section className="mt-14 rounded-3xl bg-navy-950 p-5 text-white sm:p-8" aria-labelledby="sponsorship-title">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div><p className="text-sm font-bold uppercase tracking-wider text-orange-300">Cotas de patrocínio</p><h2 id="sponsorship-title" className="mt-2 font-display text-2xl font-bold sm:text-3xl">Uma parceria no tamanho da sua marca.</h2></div>
+            <p className="max-w-md text-sm text-white/65">Escolha a cota que combina com seus objetivos e envie uma solicitação para nossa equipe.</p>
           </div>
-          <button type="button" onClick={() => navigate({ name: 'learn' })} className="btn-outline shrink-0">Explorar ferramentas <ArrowRight size={16} /></button>
-        </div>
+          <div className="mt-6 grid items-stretch gap-4 sm:grid-cols-3">
+            {sponsorshipTiers.map((tier) => (
+              <article key={tier.name} className={`flex h-full flex-col rounded-2xl border p-5 transition duration-300 hover:-translate-y-1 hover:shadow-lg ${tier.className}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-lg font-extrabold">{tier.name}</h3>
+                  {tier.badge && <span className="inline-flex items-center gap-1 rounded-full bg-amber-200/80 px-2.5 py-1 text-[11px] font-bold text-amber-950"><Star size={12} fill="currentColor" />{tier.badge}</span>}
+                </div>
+                <ul className="mt-4 flex-1 space-y-3 text-sm">
+                  {tier.benefits.map((benefit) => <li key={benefit} className="flex items-start gap-2"><Check size={16} className="mt-0.5 shrink-0 text-green-700" />{benefit}</li>)}
+                </ul>
+                <button type="button" onClick={() => openRequest('', tier.name)} className="btn-primary mt-5 w-full">
+                  Selecionar Cota {tier.name} <ArrowRight size={16} />
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
       </section>
 
-      {contactOpen && <PartnerContactModal onClose={() => setContactOpen(false)} />}
-    </div>
-  );
-}
-
-function PartnerCategory({ icon: Icon, title, detail }: { icon: typeof Store; title: string; detail: string }) {
-  return <article className="card p-5"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-600"><Icon size={22} /></span><h3 className="mt-4 font-display font-bold text-navy-900">{title}</h3><p className="mt-2 text-sm leading-relaxed text-gray-600">{detail}</p></article>;
-}
-
-function PartnerContactModal({ onClose }: { onClose: () => void }) {
-  const [name, setName] = useState('');
-  const [organization, setOrganization] = useState('');
-  const [email, setEmail] = useState('');
-  const [segment, setSegment] = useState('Loja de materiais de construção');
-  const [cnpj, setCnpj] = useState('');
-  const [phone, setPhone] = useState('');
-  const [cityState, setCityState] = useState('');
-  const [partnershipType, setPartnershipType] = useState('');
-  const [tier, setTier] = useState('');
-  const [message, setMessage] = useState('');
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError('');
-    const cnpjDigits = cnpj.replace(/\D/g, '');
-    const phoneDigits = phone.replace(/\D/g, '');
-    const locationMatch = cityState.trim().match(/^(.+?)\s*[-,]\s*([A-Za-z]{2})$/);
-    if (cnpjDigits.length !== 14) {
-      setError('Informe um CNPJ com 14 dígitos.');
-      return;
-    }
-    if (phoneDigits.length !== 11) {
-      setError('Informe um WhatsApp com DDD e 11 dígitos.');
-      return;
-    }
-    if (!locationMatch) {
-      setError('Informe a cidade e a UF. Exemplo: Andradina - SP.');
-      return;
-    }
-    const state = locationMatch[2].toUpperCase();
-    if (!BRAZIL_STATES.some(([uf]) => uf === state)) {
-      setError('Informe uma UF válida. Exemplo: Andradina - SP.');
-      return;
-    }
-    if (!isSupabaseConfigured) {
-      setError('O envio está temporariamente indisponível. Tente novamente mais tarde.');
-      return;
-    }
-
-    setLoading(true);
-    const { error: insertError } = await supabase.from('solicitacoes_parceria').insert({
-      nome_empresa: organization.trim(),
-      cnpj: cnpjDigits,
-      responsavel: name.trim(),
-      email: email.trim(),
-      whatsapp: phoneDigits,
-      cidade: locationMatch[1].trim(),
-      estado: state,
-      categoria: segment,
-      tipo_parceria: partnershipType,
-      cota: partnershipType === partnershipTypeOptions[0].value ? tier || null : null,
-      mensagem: message.trim(),
-    });
-    setLoading(false);
-    if (insertError) {
-      console.error('Não foi possível registrar a solicitação de parceria:', insertError);
-      setError(insertError.message.includes('Aguarde alguns minutos')
-        ? 'Aguarde alguns minutos antes de enviar outra proposta.'
-        : 'Não foi possível enviar sua proposta. Confira os dados e tente novamente.');
-      return;
-    }
-    setSent(true);
-  };
-
-  return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-navy-950/70 p-2 backdrop-blur-sm sm:p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="partner-contact-title" className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:p-8" onClick={(event) => event.stopPropagation()}>
-        <button type="button" onClick={onClose} aria-label="Fechar" className="absolute right-4 top-4 rounded-lg p-2 text-gray-400 hover:bg-gray-100"><X size={20} /></button>
-        {sent ? (
-          <div className="py-7 text-center">
-            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-600"><Handshake size={27} /></span>
-            <h2 id="partner-contact-title" className="mt-4 font-display text-xl font-bold text-navy-900">Proposta recebida!</h2>
-            <p className="mt-2 text-sm text-gray-600">Recebemos sua proposta! Nossa equipe entrará em contato em breve.</p>
-            <button type="button" onClick={onClose} className="btn-primary mt-5">Concluir</button>
-          </div>
-        ) : (
-          <>
-            <span className="text-sm font-bold uppercase tracking-wider text-orange-600">Fale com a administração</span>
-            <h2 id="partner-contact-title" className="mt-2 font-display text-2xl font-bold text-navy-900">Vamos conversar sobre parceria?</h2>
-            <form onSubmit={(event) => void submit(event)} className="mt-5 grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium text-navy-700">Seu nome<input required value={name} onChange={(event) => setName(event.target.value)} className="input-field mt-1" /></label>
-              <label className="block text-sm font-medium text-navy-700">Loja ou organização<input required value={organization} onChange={(event) => setOrganization(event.target.value)} className="input-field mt-1" /></label>
-              <label className="block text-sm font-medium text-navy-700">E-mail para retorno<input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="input-field mt-1" /></label>
-              <label className="block text-sm font-medium text-navy-700">CNPJ da Empresa
-                <input required inputMode="numeric" autoComplete="on" maxLength={18} value={cnpj} onChange={(event) => setCnpj(formatCnpj(event.target.value))} placeholder="00.000.000/0000-00" className="input-field mt-1" />
-              </label>
-              <label className="block text-sm font-medium text-navy-700">WhatsApp / Telefone
-                <input required type="tel" inputMode="tel" autoComplete="tel" maxLength={15} value={phone} onChange={(event) => setPhone(formatPhone(event.target.value))} placeholder="(00) 00000-0000" className="input-field mt-1" />
-              </label>
-              <label className="block text-sm font-medium text-navy-700">Cidade e Estado (UF)
-                <input required maxLength={120} value={cityState} onChange={(event) => setCityState(event.target.value)} placeholder="Andradina - SP" className="input-field mt-1" />
-              </label>
-              <label className="block text-sm font-medium text-navy-700">Tipo de Parceria
-                <select required value={partnershipType} onChange={(event) => setPartnershipType(event.target.value)} className="input-field mt-1">
-                  <option value="">Selecione</option>
-                  {partnershipTypeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </select>
-              </label>
-              <label className="block text-sm font-medium text-navy-700">Segmento
-                <select value={segment} onChange={(event) => setSegment(event.target.value)} className="input-field mt-1">
-                  <option>Loja de materiais de construção</option>
-                  <option>Fabricante</option>
-                  <option>Construtora</option>
-                  <option>Imobiliária / divulgação de imóveis</option>
-                  <option>Instituição de ensino</option>
-                  <option>Outro</option>
-                </select>
-              </label>
-              {partnershipType === partnershipTypeOptions[0].value && (
-                <label className="block text-sm font-medium text-navy-700">Cota de patrocínio
-                  <select value={tier} onChange={(event) => setTier(event.target.value)} className="input-field mt-1">
-                    <option value="">A definir</option>
-                    <option value="Ouro">Ouro</option>
-                    <option value="Prata">Prata</option>
-                    <option value="Bronze">Bronze</option>
-                  </select>
-                </label>
-              )}
-              <label className="block text-sm font-medium text-navy-700 sm:col-span-2">Conte um pouco sobre sua proposta
-                <textarea required maxLength={1000} rows={4} value={message} onChange={(event) => setMessage(event.target.value)} className="input-field mt-1 resize-y" placeholder="Conte sobre sua empresa e a parceria que gostaria de propor." />
-              </label>
-              {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:col-span-2">{error}</p>}
-              <button type="submit" disabled={loading} className="btn-primary w-full sm:col-span-2"><Handshake size={17} /> {loading ? 'Enviando proposta...' : 'Enviar proposta'}</button>
-            </form>
-          </>
-        )}
-      </div>
+      {request && <PartnerRequestModal initialCategory={request.category} initialTier={request.tier} onClose={() => setRequest(null)} />}
     </div>
   );
 }

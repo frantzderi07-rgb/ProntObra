@@ -5,6 +5,7 @@ import type { ProfessionalWithStats } from '@/lib/types';
 import { fetchProfessionals } from '@/lib/queries';
 import ProfessionalCard from '@/components/ProfessionalCard';
 import CitySelectorSpMs from '@/components/CitySelectorSpMs';
+import ProfessionalVisibilitySection from '@/components/ProfessionalVisibilitySection';
 
 interface ProfessionalsPageProps {
   initialSpecialty?: string;
@@ -39,18 +40,40 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
     (!availability || (availability === 'available' ? professional.is_available !== false : professional.is_available === false))
     && (!certification || (certification === 'certified' ? !!professional.certifications?.length : !professional.certifications?.length)),
   );
+  const featuredProfessionals = filteredProfessionals.filter((professional) => professional.is_featured).slice(0, 3);
+  const communityTalents = featuredProfessionals.length ? featuredProfessionals : filteredProfessionals.slice(0, 3);
+  const communityTalentIds = new Set(communityTalents.map((professional) => professional.id));
+  const otherProfessionals = filteredProfessionals.filter((professional) => !communityTalentIds.has(professional.id));
 
   return (
-    <div className="min-h-screen bg-gray-50 animate-fade-in">
-      {/* Page header */}
+    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
       <div className="bg-navy-900 py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">Profissionais Disponíveis</h1>
-          <p className="mt-1 text-white/70">Encontre profissionais qualificados em todo o Brasil.</p>
+          <p className="text-sm font-bold uppercase tracking-wider text-orange-300">Talentos da comunidade</p>
+          <h1 className="mt-2 font-display text-2xl font-bold text-white sm:text-3xl">Profissionais para sua obra</h1>
+          <p className="mt-1 text-white/70">Encontre profissionais qualificados, compare perfis e fale diretamente com quem constrói.</p>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <section aria-labelledby="community-talents-title" className="mb-10">
+          <div className="mb-5 flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+            <div><p className="text-sm font-bold uppercase tracking-wider text-orange-700">Conheça quem faz acontecer</p><h2 id="community-talents-title" className="mt-1 section-title">Talentos da Comunidade</h2></div>
+            <p className="text-sm text-slate-500">Perfis com especialidades, avaliações e selos quando disponíveis.</p>
+          </div>
+          {loading ? (
+            <div className="grid gap-5 md:grid-cols-3">
+              {[1, 2, 3].map((item) => <div key={item} className="card h-64 animate-pulse bg-white" />)}
+            </div>
+          ) : communityTalents.length ? (
+            <div className="grid gap-5 md:grid-cols-3">
+              {communityTalents.map((person, index) => <div key={person.id} className="motion-safe:animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}><ProfessionalCard professional={person} /></div>)}
+            </div>
+          ) : (
+            <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-600">Os perfis de profissionais aparecerão aqui conforme forem cadastrados.</p>
+          )}
+        </section>
+
         {/* Search/filter bar */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -108,14 +131,17 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
             <p className="mt-1 text-sm text-gray-500">Tente alterar os filtros de busca.</p>
             <button onClick={clearFilters} className="btn-primary mt-4">Limpar filtros</button>
           </div>
+        ) : otherProfessionals.length === 0 ? (
+          <p className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600">Todos os perfis desta busca estão na vitrine de talentos acima.</p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredProfessionals.map((p) => (
+            {otherProfessionals.map((p) => (
               <ProfessionalCard key={p.id} professional={p} />
             ))}
           </div>
         )}
       </div>
+      <ProfessionalVisibilitySection />
     </div>
   );
 }

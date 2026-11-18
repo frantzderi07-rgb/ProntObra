@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { AuthProvider } from './lib/auth';
 import { NavProvider, useNav } from './lib/nav';
 import * as queries from './lib/queries';
@@ -53,7 +54,7 @@ function AppContent() {
   const renderPage = () => {
     switch (page.name) {
       case 'home':
-        return <HomePage professionals={professionals} jobs={jobs} />;
+        return <HomePage />;
       case 'professionals':
         return <ProfessionalsPage
           initialSpecialty={'specialty' in page ? page.specialty ?? 'all' : 'all'}
@@ -79,18 +80,18 @@ function AppContent() {
       case 'tools':
         return <ToolsPage />;
       case 'community':
-        return <CommunityPage />;
+        return <CommunityPage professionals={professionals} jobs={jobs} />;
       case 'about':
         return <AboutPage />;
       case 'partners':
         return <PartnersPage />;
       default:
-        return <HomePage professionals={professionals} jobs={jobs} />;
+        return <HomePage />;
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#fcfaf6] text-slate-900">
       <Header />
       {page.name !== 'home' && <Breadcrumbs />}
       <main className="flex-1">
@@ -123,10 +124,15 @@ function Breadcrumbs() {
       : page.name;
   const sectionLabel = labels[section];
   const currentLabel = labels[page.name];
+  const backPage = page.name === 'professional-detail' ? { name: 'professionals' as const }
+    : page.name === 'job-detail' || page.name === 'post-job' ? { name: 'jobs' as const }
+      : { name: 'home' as const };
 
   return (
     <nav aria-label="Caminho de navegação" className="border-b border-slate-100 bg-white">
       <ol className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 text-xs sm:px-6 lg:px-8">
+        <li><button type="button" onClick={() => navigate(backPage)} className="inline-flex items-center gap-1 font-semibold text-orange-700 transition hover:text-orange-800"><ArrowLeft size={14} /> Voltar</button></li>
+        <li aria-hidden="true" className="mr-1 text-slate-300">|</li>
         <li><button type="button" onClick={() => navigate({ name: 'home' })} className="font-medium text-slate-500 hover:text-orange-600">Início</button></li>
         <li aria-hidden="true" className="text-slate-300">›</li>
         {section !== page.name && <><li><button type="button" onClick={() => navigate(section === 'professionals' ? { name: 'professionals' } : { name: 'jobs' })} className="font-medium text-slate-500 hover:text-orange-600">{sectionLabel}</button></li><li aria-hidden="true" className="text-slate-300">›</li></>}

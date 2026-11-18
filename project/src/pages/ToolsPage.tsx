@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Calculator, ClipboardList, Copy, Plus, Printer, Ruler, Trash2, Wrench } from 'lucide-react';
+import ServicePriceReference from '@/components/ServicePriceReference';
 
 type ToolTab = 'budget' | 'diary' | 'materials';
 interface BudgetLine { id: string; description: string; quantity: string; unitPrice: string }
@@ -12,6 +13,11 @@ const tabs: { id: ToolTab; label: string; icon: typeof Calculator }[] = [
   { id: 'budget', label: 'Gerador de Orçamento', icon: ClipboardList },
   { id: 'diary', label: 'Diário de Obra', icon: Wrench },
   { id: 'materials', label: 'Calculadora de Materiais', icon: Calculator },
+];
+const toolHighlights: { id: ToolTab; title: string; detail: string; image: string }[] = [
+  { id: 'materials', title: 'Calculadora de Materiais', detail: 'Tenha uma estimativa inicial para sua obra.', image: 'https://images.unsplash.com/photo-1581092918056-0c4c3a3f7f6f?auto=format&fit=crop&w=800&q=80' },
+  { id: 'budget', title: 'Guia de Orçamento', detail: 'Organize serviços, quantidades e valores.', image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80' },
+  { id: 'diary', title: 'Checklist de Etapas', detail: 'Acompanhe o progresso e anote o dia a dia.', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80' },
 ];
 
 export default function ToolsPage() {
@@ -96,11 +102,23 @@ export default function ToolsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
       <section className="bg-navy-950 px-4 py-10 text-white sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl"><span className="text-sm font-bold uppercase tracking-wider text-orange-300">Ferramentas da obra</span><h1 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">Planeje, acompanhe e calcule.</h1><p className="mt-2 max-w-2xl text-sm text-white/70">Recursos gratuitos para organizar o dia a dia da construção.</p></div>
       </section>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <section className="mb-8 grid gap-4 md:grid-cols-3" aria-label="Ferramentas rápidas">
+          {toolHighlights.map((tool, index) => (
+            <button key={tool.id} type="button" onClick={() => { setActiveTab(tool.id); setError(''); }}
+              className="group relative isolate flex min-h-48 flex-col justify-end overflow-hidden rounded-2xl p-5 text-left text-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg motion-safe:animate-slide-up"
+              style={{ animationDelay: `${index * 100}ms` }}>
+              <img src={tool.image} alt="" loading="lazy" className="absolute inset-0 -z-20 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+              <span className="absolute inset-0 -z-10 bg-gradient-to-t from-navy-950/95 via-navy-950/40 to-transparent" />
+              <span className="font-display text-lg font-bold">{tool.title}</span>
+              <span className="mt-1 text-sm text-white/75">{tool.detail}</span>
+            </button>
+          ))}
+        </section>
         <div role="tablist" aria-label="Ferramentas da obra" className="mb-7 flex flex-wrap gap-2">
           {tabs.map(({ id, label, icon: Icon }) => <button key={id} role="tab" aria-selected={activeTab === id} onClick={() => { setActiveTab(id); setError(''); }} className={`inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${activeTab === id ? 'bg-navy-900 text-white shadow' : 'border border-slate-200 bg-white text-navy-700 hover:border-orange-300'}`}><Icon size={17} />{label}</button>)}
         </div>
@@ -130,6 +148,7 @@ export default function ToolsPage() {
             <div className="rounded-2xl bg-navy-50 p-5"><h3 className="font-display text-lg font-bold text-navy-900">Materiais estimados</h3><div className="mt-4 space-y-3"><Estimate label="Tijolos cerâmicos" value={area > 0 ? `${Math.ceil(area * 25)} unidades` : '—'} /><Estimate label="Cimento (sacos de 50 kg)" value={area > 0 ? `${Math.ceil(area * 0.18)} sacos` : '—'} /><Estimate label="Tinta (2 demãos)" value={area > 0 ? `${Math.ceil(area * 0.2)} litros` : '—'} /></div><p className="mt-4 text-xs leading-relaxed text-slate-500">Estimativas aproximadas: 25 tijolos/m², 0,18 saco de cimento/m² e 10 m²/L por demão. Considere perdas e valide o cálculo com um profissional.</p></div>
           </section>
         )}
+        <div className="mt-12"><ServicePriceReference /></div>
       </div>
     </div>
   );

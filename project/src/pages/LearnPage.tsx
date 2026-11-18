@@ -14,6 +14,13 @@ const courses = [
   { id: 'acabamento', title: 'Acabamento Fino', description: 'Técnicas de preparação, nivelamento e acabamento de superfícies.', duration: '2 horas', category: 'Acabamento' },
 ];
 
+const guides = [
+  { title: 'Planejamento de uma reforma', detail: 'Organize etapas, prazos e escolhas antes de começar.', image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80' },
+  { title: 'Segurança no canteiro', detail: 'Boas práticas para reduzir riscos nas atividades do dia a dia.', image: 'https://images.unsplash.com/photo-1581092918056-0c4c3a3f7f6f?auto=format&fit=crop&w=800&q=80' },
+  { title: 'Como crescer no mercado', detail: 'Valorize seu portfólio, fortaleça seu perfil e cuide do relacionamento com clientes.', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80' },
+  { title: 'Acabamentos sem desperdício', detail: 'Cuidados com preparação, aplicação e conservação dos materiais.', image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' },
+];
+
 export default function LearnPage() {
   const { user, profile, refreshProfile } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
@@ -36,12 +43,17 @@ export default function LearnPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 animate-fade-in">
-      <section className="bg-navy-900 px-4 py-10 text-white sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-3 text-orange-400"><GraduationCap size={24} /><span className="text-sm font-semibold">PARA APRENDER</span></div>
-          <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl">Conhecimento que constrói</h1>
-          <p className="mt-2 max-w-2xl text-sm text-white/70 sm:text-base">Capacitações práticas e ferramentas para apoiar cada etapa da sua obra, em todo o Brasil.</p>
+    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
+      <section className="bg-navy-950 px-4 py-10 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-12">
+          <div className="motion-safe:animate-slide-up lg:col-span-7">
+            <div className="flex items-center gap-3 text-orange-300"><GraduationCap size={24} /><span className="text-sm font-semibold">PORTAL DE CONHECIMENTO</span></div>
+            <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl">Conhecimento que constrói</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/70 sm:text-base">Guias práticos, segurança no trabalho e capacitações para apoiar cada etapa da obra e o crescimento de quem constrói.</p>
+          </div>
+          <div className="hidden overflow-hidden rounded-3xl border border-white/10 lg:col-span-5 lg:block">
+            <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1000&q=85" alt="Profissional acompanha um projeto de construção" className="h-56 w-full object-cover" />
+          </div>
         </div>
       </section>
 
@@ -53,7 +65,7 @@ export default function LearnPage() {
             {courses.map((course) => {
               const isEnrolled = enrolled.includes(course.id);
               return (
-                <article key={course.id} className="card flex flex-col p-5">
+                <article key={course.id} className="card flex flex-col p-5 transition duration-300 hover:-translate-y-1">
                   <span className="badge self-start bg-orange-50 text-orange-700">{course.category}</span>
                   <h3 className="mt-3 font-display text-lg font-bold text-navy-900">{course.title}</h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-gray-600">{course.description}</p>
@@ -74,8 +86,13 @@ export default function LearnPage() {
 
         <section>
           <div className="mb-5 flex items-center gap-2"><BookOpen className="text-orange-500" size={21} /><h2 className="section-title">Guias práticos e e-books</h2></div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {[['Planejamento de uma reforma', 'Organize etapas, prazos e escolhas antes de começar.'], ['Segurança no canteiro', 'Boas práticas para reduzir riscos nas atividades do dia a dia.'], ['Acabamentos sem desperdício', 'Cuidados com preparação, aplicação e conservação dos materiais.']].map(([title, detail]) => <article key={title} className="card p-5"><span className="badge bg-orange-50 text-orange-700">Guia Prático</span><h3 className="mt-3 font-display font-bold text-navy-900">{title}</h3><p className="mt-2 text-sm leading-relaxed text-gray-600">{detail}</p></article>)}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {guides.map(({ title, detail, image }, index) => (
+              <article key={title} className="card overflow-hidden transition duration-300 hover:-translate-y-1 motion-safe:animate-slide-up" style={{ animationDelay: `${index * 80}ms` }}>
+                <img src={image} alt="" loading="lazy" className="h-36 w-full object-cover" />
+                <div className="p-5"><span className="badge bg-orange-50 text-orange-700">Guia Prático</span><h3 className="mt-3 font-display font-bold text-navy-900">{title}</h3><p className="mt-2 text-sm leading-relaxed text-gray-600">{detail}</p></div>
+              </article>
+            ))}
           </div>
         </section>
 
