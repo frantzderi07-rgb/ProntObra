@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, BadgePercent, Building2, Check, Handshake, Star, Store, Truck, Wrench } from 'lucide-react';
+import { ArrowRight, BadgePercent, Building2, Check, Handshake, PackageCheck, Star, Store, Truck, Wrench } from 'lucide-react';
 import PartnerRequestModal from '@/components/PartnerRequestModal';
 
 const categories = [
@@ -12,6 +12,12 @@ const brandBenefits = [
   { title: 'Mais visibilidade', detail: 'Apresente sua marca a quem planeja, executa e transforma obras.', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80', icon: Building2 },
   { title: 'Conexões relevantes', detail: 'Aproxime seus produtos e serviços dos profissionais da construção.', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80', icon: Handshake },
   { title: 'Ofertas para a comunidade', detail: 'Compartilhe novidades, condições e benefícios com clientes e equipes.', image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80', icon: BadgePercent },
+];
+
+const catalogItems = [
+  { title: 'Catálogo de materiais', detail: 'Apresente produtos e soluções para diferentes etapas da obra.', icon: PackageCheck, image: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=800&q=80' },
+  { title: 'Ofertas da semana', detail: 'Destaque condições especiais e novidades para a comunidade.', icon: BadgePercent, image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80' },
+  { title: 'Locação de máquinas e equipamentos', detail: 'Divulgue equipamentos disponíveis para cada tipo de serviço.', icon: Wrench, image: 'https://images.unsplash.com/photo-1581092918056-0c4c3a3f7f6f?auto=format&fit=crop&w=800&q=80' },
 ];
 
 const sponsorshipTiers = [
@@ -41,17 +47,24 @@ export default function PartnersPage() {
 
   return (
     <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
-      <section className="relative isolate overflow-hidden bg-navy-950 px-4 py-14 text-white sm:px-6 sm:py-16 lg:px-8">
-        <div className="absolute inset-0 -z-10 bg-cover bg-center opacity-25" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=85')" }} />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950 via-navy-950/90 to-navy-900/65" />
-        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-12">
-          <div className="motion-safe:animate-slide-up lg:col-span-8">
-            <span className="badge border border-orange-400/30 bg-orange-500/10 text-orange-300"><Handshake size={14} /> Programa de Parcerias</span>
-            <h1 className="mt-5 max-w-3xl font-display text-4xl font-extrabold leading-tight sm:text-5xl">Sua marca ao lado de quem constrói.</h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/75">Aproxime sua marca de profissionais, clientes e empresas que movimentam a construção civil em todo o Brasil.</p>
+      <section className="overflow-hidden bg-[#f8f5ef]">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-16">
+          <div className="motion-safe:animate-slide-up">
+            <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2 text-sm font-bold text-orange-800"><Handshake size={16} /> Programa de Parcerias</span>
+            <h1 className="mt-5 max-w-3xl font-display text-4xl font-extrabold leading-tight text-navy-950 sm:text-5xl">Sua marca ao lado de quem constrói.</h1>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">Aproxime sua marca de profissionais, clientes e empresas que movimentam a construção civil em todo o Brasil.</p>
+            <button type="button" onClick={() => document.getElementById('vitrine')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="btn-primary mt-6 !bg-[#F97316] hover:!bg-orange-600">
+              Conhecer a vitrine <ArrowRight size={17} />
+            </button>
           </div>
-          <div className="hidden justify-center lg:col-span-4 lg:flex">
-            <div className="flex h-48 w-48 items-center justify-center rounded-full border border-orange-400/30 bg-orange-500/10 text-orange-300"><Building2 size={76} strokeWidth={1.3} /></div>
+          <div className="relative mx-auto w-full max-w-xl motion-safe:animate-slide-up">
+            <img src="https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=1200&q=85" alt="Materiais e ferramentas de construção em loja" className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]" />
+            <span className="absolute -left-2 top-5 inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-left-5 sm:top-10 sm:px-4">
+              <Store size={18} className="text-orange-600" /> Lojas de Materiais
+            </span>
+            <span className="absolute -bottom-4 right-3 inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-right-4 sm:bottom-8 sm:px-4">
+              <Truck size={18} className="text-orange-600" /> Locadoras e Construtoras
+            </span>
           </div>
         </div>
       </section>
@@ -72,6 +85,32 @@ export default function PartnersPage() {
             </article>
           ))}
         </div>
+
+        <section className="mt-14" aria-labelledby="partner-catalog-title">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-sm font-bold uppercase tracking-wider text-orange-700">Sua marca em evidência</p>
+              <h2 id="partner-catalog-title" className="mt-2 section-title">O que sua marca pode divulgar na Vitrine</h2>
+            </div>
+            <button type="button" onClick={() => openRequest()} className="btn-outline self-start !border-orange-200 !text-orange-800 hover:!border-orange-400 sm:self-auto">
+              Solicitar Cotação <ArrowRight size={16} />
+            </button>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {catalogItems.map(({ title, detail, icon: Icon, image }, index) => (
+              <article key={title} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg motion-safe:animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+                <div className="relative h-40 overflow-hidden">
+                  <img src={image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  <span className="absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-orange-600 shadow"><Icon size={20} /></span>
+                </div>
+                <div className="p-5">
+                  <h3 className="font-display font-bold text-navy-900">{title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{detail}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
 
         <div id="vitrine" className="mt-14 scroll-mt-24">
           <div className="mb-6 max-w-2xl">

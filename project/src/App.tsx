@@ -54,7 +54,7 @@ function AppContent() {
   const renderPage = () => {
     switch (page.name) {
       case 'home':
-        return <HomePage />;
+        return <HomePage professionals={professionals} />;
       case 'professionals':
         return <ProfessionalsPage
           initialSpecialty={'specialty' in page ? page.specialty ?? 'all' : 'all'}

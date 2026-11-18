@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ArrowRight, BriefcaseBusiness, Building2, GraduationCap, HardHat, ShieldCheck, Store, Users } from 'lucide-react';
 import { useNav } from '@/lib/nav';
+import type { ProfessionalWithStats } from '@/lib/types';
+import ProfessionalCard from '@/components/ProfessionalCard';
 import AuthModal from '@/components/AuthModal';
 
 const audienceCards = [
@@ -27,9 +29,12 @@ const audienceCards = [
   },
 ] as const;
 
-export default function HomePage() {
+export default function HomePage({ professionals = [] }: { professionals?: ProfessionalWithStats[] }) {
   const { navigate } = useNav();
   const [authOpen, setAuthOpen] = useState(false);
+  const highlightedProfessionals = (professionals.filter((professional) => professional.is_featured).length
+    ? professionals.filter((professional) => professional.is_featured)
+    : professionals).slice(0, 3);
 
   const goToAudience = (variant: typeof audienceCards[number]['variant']) => {
     if (variant === 'client') setAuthOpen(true);
@@ -96,6 +101,29 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {highlightedProfessionals.length > 0 && (
+          <section className="bg-white px-4 py-12 sm:px-6 sm:py-14 lg:px-8" aria-labelledby="home-professionals-title">
+            <div className="mx-auto max-w-7xl">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-wider text-orange-700">Talentos em destaque</p>
+                  <h2 id="home-professionals-title" className="mt-2 section-title">Profissionais que fazem acontecer.</h2>
+                </div>
+                <button type="button" onClick={() => navigate({ name: 'professionals' })} className="inline-flex items-center gap-2 self-start text-sm font-bold text-orange-700 transition hover:gap-3 sm:self-auto">
+                  Ver todos os profissionais <ArrowRight size={17} />
+                </button>
+              </div>
+              <div className="mt-6 grid items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {highlightedProfessionals.map((professional, index) => (
+                  <div key={professional.id} className="motion-safe:animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+                    <ProfessionalCard professional={professional} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="bg-white py-14 sm:py-16" aria-labelledby="audience-title">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

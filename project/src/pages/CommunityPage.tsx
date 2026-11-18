@@ -1,7 +1,8 @@
-import { ClipboardCheck, HardHat, MessageCircle, ShieldCheck, Star, Users } from 'lucide-react';
+import { ArrowRight, ClipboardCheck, Handshake, HardHat, MessageCircle, ShieldCheck, Star, Users } from 'lucide-react';
 import type { Job, ProfessionalWithStats, Review } from '@/lib/types';
 import CommunityBenefitsSection from '@/components/CommunityBenefitsSection';
 import CommunityFeed from '@/components/CommunityFeed';
+import { useNav } from '@/lib/nav';
 
 interface CommunityPageProps {
   professionals?: ProfessionalWithStats[];
@@ -15,6 +16,7 @@ const bestPractices = [
 ];
 
 export default function CommunityPage({ professionals = [], jobs = [] }: CommunityPageProps) {
+  const { navigate } = useNav();
   const reviews = professionals
     .flatMap((professional) => (professional.reviews ?? [])
       .filter((review) => review.comment?.trim())
@@ -26,22 +28,37 @@ export default function CommunityPage({ professionals = [], jobs = [] }: Communi
 
   return (
     <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
-      <section className="relative isolate overflow-hidden bg-navy-950 px-4 py-14 text-white sm:px-6 sm:py-16 lg:px-8">
-        <div className="absolute inset-0 -z-10 bg-cover bg-center opacity-30" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1800&q=85')" }} />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950 via-navy-950/85 to-navy-900/60" />
-        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-12">
-          <div className="motion-safe:animate-slide-up lg:col-span-8">
-            <span className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-300"><HardHat size={17} /> Comunidade ProntObra</span>
-            <h1 className="mt-3 max-w-3xl font-display text-3xl font-extrabold sm:text-5xl">Cada obra fica melhor quando a gente constrói junto.</h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/75">Compartilhe experiências, reconheça bons trabalhos e encontre ideias para fortalecer a comunidade da construção.</p>
+      <section className="overflow-hidden bg-[#f8f5ef]">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-16">
+          <div className="motion-safe:animate-slide-up">
+            <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2 text-sm font-bold text-orange-800"><HardHat size={17} /> Comunidade ProntObra</span>
+            <h1 className="mt-5 max-w-2xl font-display text-4xl font-extrabold leading-tight text-navy-950 sm:text-5xl">Cada obra fica melhor quando a gente constrói junto.</h1>
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">Compartilhe experiências, reconheça bons trabalhos e encontre ideias para fortalecer a comunidade da construção.</p>
+            <button type="button" onClick={() => document.getElementById('community-feed-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="btn-primary mt-6 !bg-[#F97316] hover:!bg-orange-600">
+              Conhecer a comunidade <ArrowRight size={17} />
+            </button>
           </div>
-          <div className="hidden overflow-hidden rounded-3xl border border-white/10 shadow-xl lg:col-span-4 lg:block">
-            <img src="https://images.unsplash.com/photo-1581092918056-0c4c3a3f7f6f?auto=format&fit=crop&w=900&q=85" alt="Equipe trabalhando em uma obra" className="h-56 w-full object-cover" />
+          <div className="relative mx-auto w-full max-w-xl motion-safe:animate-slide-up">
+            <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=85" alt="Equipe analisando um projeto de construção" className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]" />
+            <span className="absolute -left-2 top-5 rounded-2xl border border-white/70 bg-white/95 px-4 py-3 text-sm font-semibold text-navy-900 shadow-lg sm:-left-5 sm:top-10">
+              <span className="block text-orange-600">Juntos construímos</span>mais confiança
+            </span>
+            <span className="absolute -bottom-4 right-3 rounded-2xl bg-[#1C1917] px-4 py-3 text-sm font-semibold text-white shadow-lg sm:-right-4 sm:bottom-8">
+              Pessoas que fazem acontecer
+            </span>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto -mt-5 grid max-w-7xl gap-3 px-4 sm:grid-cols-3 sm:px-6 lg:px-8" aria-label="Indicadores da comunidade">
+      <section className="bg-[#1C1917] px-4 py-5 text-white sm:px-6 lg:px-8" aria-label="Confiança na comunidade">
+        <div className="mx-auto grid max-w-7xl gap-3 sm:grid-cols-3">
+          <CommunityTrust label="Perfis Verificados" icon={ShieldCheck} />
+          <CommunityTrust label="Negociação 100% Direta" icon={Handshake} />
+          <CommunityTrust label="Avaliações Reais" icon={Star} />
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-3 px-4 py-7 sm:grid-cols-3 sm:px-6 lg:px-8" aria-label="Indicadores da comunidade">
         <CommunityMetric label="Profissionais disponíveis" value={availableCount} icon={Users} />
         <CommunityMetric label="Avaliações compartilhadas" value={reviewCount} icon={Star} />
         <CommunityMetric label="Oportunidades abertas" value={jobs.length} icon={ClipboardCheck} />
@@ -49,10 +66,16 @@ export default function CommunityPage({ professionals = [], jobs = [] }: Communi
 
       <div className="mx-auto max-w-7xl space-y-12 px-4 py-12 sm:px-6 lg:px-8">
         <section aria-labelledby="community-reviews-title">
-          <div className="mb-5">
-            <p className="text-sm font-bold uppercase tracking-wider text-orange-700">Experiências reais</p>
-            <h2 id="community-reviews-title" className="mt-1 section-title">Avaliações e depoimentos</h2>
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wider text-orange-700">Experiências reais</p>
+              <h2 id="community-reviews-title" className="mt-1 section-title">Avaliações e depoimentos</h2>
+            </div>
+            <button type="button" onClick={() => navigate({ name: 'professionals' })} className="btn-outline self-start !border-orange-200 !text-orange-800 hover:!border-orange-400 sm:self-auto">
+              Deixar minha avaliação <ArrowRight size={16} />
+            </button>
           </div>
+          <p className="mb-4 text-sm text-slate-500">Escolha um profissional para conhecer o perfil e compartilhar sua experiência.</p>
           {reviews.length ? (
             <div className="grid gap-4 md:grid-cols-3">
               {reviews.map((review: Review & { professionalName: string }) => (
@@ -96,6 +119,15 @@ export default function CommunityPage({ professionals = [], jobs = [] }: Communi
           <CommunityFeed />
         </section>
       </div>
+    </div>
+  );
+}
+
+function CommunityTrust({ label, icon: Icon }: { label: string; icon: typeof ShieldCheck }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15 text-orange-400"><Icon size={20} /></span>
+      <span className="text-sm font-semibold">{label}</span>
     </div>
   );
 }
