@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Award, BadgeCheck, BadgePercent, Building2, CheckCircle2, GraduationCap, MapPin, MessageCircle, Search, Star, Store, Truck, UserRound, Wrench, X } from 'lucide-react';
+import { ArrowRight, Award, BadgeCheck, BadgePercent, Building2, Camera, Check, CheckCircle2, GraduationCap, Handshake, Info, MapPin, MessageCircle, Rocket, Search, Star, Store, Truck, UserRound, Wrench, X } from 'lucide-react';
 import { useNav } from '@/lib/nav';
 import { BRAZIL_STATES, SPECIALTIES, type Review } from '@/lib/types';
 import type { Job, ProfessionalWithStats } from '@/lib/types';
@@ -109,6 +109,7 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
   const [authType, setAuthType] = useState<'professional' | 'company' | 'client'>('client');
   const [partnerRequest, setPartnerRequest] = useState<PartnerRequest | null>(null);
   const [vipPlansOpen, setVipPlansOpen] = useState(false);
+  const [vipPlanStep, setVipPlanStep] = useState<1 | 2 | 3>(1);
   const [couponCodes, setCouponCodes] = useState<Record<string, string>>({});
   const [availableCoupons, setAvailableCoupons] = useState(coupons);
   const [couponMessage, setCouponMessage] = useState('');
@@ -187,6 +188,14 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
   const openSignup = (userType: 'company' | 'client') => {
     setAuthType(userType);
     setAuthOpen(true);
+  };
+  const openProfessionalSignup = () => {
+    setAuthType('professional');
+    setAuthOpen(true);
+  };
+  const openVipPlans = (step: 1 | 2 = 1) => {
+    setVipPlanStep(step);
+    setVipPlansOpen(true);
   };
 
   const openPartnerRequest = (tier = '', category = '') => {
@@ -327,24 +336,42 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8" aria-labelledby="vip-plans-title">
-          <div className="rounded-3xl border border-orange-200 bg-white p-5 shadow-sm sm:p-8">
-            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-              <div className="max-w-2xl">
-                <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-600"><Award size={17} /> Mais visibilidade para seu perfil</p>
-                <h2 id="vip-plans-title" className="mt-2 section-title">Conheça os planos ProntObra</h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">Comece gratuitamente ou consulte a equipe sobre o Destaque VIP para profissionais e empresas.</p>
+          <div className="rounded-3xl bg-[#f8f5ef] p-5 sm:p-8">
+            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-3xl">
+                <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-700"><Award size={17} /> Mais visibilidade para profissionais</p>
+                <h2 id="vip-plans-title" className="mt-2 section-title">Destaque seu trabalho e conquiste mais obras</h2>
+                <p className="mt-2 text-sm leading-relaxed text-slate-700">Crie seu perfil gratuitamente ou ative o Destaque VIP para aparecer no topo das buscas da sua cidade.</p>
               </div>
-              <button type="button" onClick={() => setVipPlansOpen(true)} className="btn-primary shrink-0">Comparar planos <ArrowRight size={17} /></button>
+              <button type="button" onClick={() => openVipPlans()} className="btn-outline shrink-0 !border-orange-200 !text-orange-800 hover:!border-orange-400">Comparar planos <ArrowRight size={17} /></button>
             </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="font-bold text-slate-900">Plano Gratuito</p>
-                <p className="mt-1 text-sm text-slate-600">Perfil público, presença nas buscas e acesso aos recursos básicos da plataforma.</p>
-              </div>
-              <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4">
-                <p className="flex items-center gap-2 font-bold text-orange-800"><BadgeCheck size={18} /> Destaque VIP</p>
-                <p className="mt-1 text-sm text-orange-800">Selo de destaque e prioridade no topo das buscas, conforme disponibilidade e critérios da plataforma.</p>
-              </div>
+            <div className="mt-6 grid items-stretch gap-4 md:grid-cols-2">
+              <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <div>
+                  <p className="font-display text-xl font-bold text-navy-900">Plano Gratuito</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-500">R$ 0 <span className="font-normal">/ para sempre</span></p>
+                  <ul className="mt-5 space-y-3 text-sm text-slate-700">
+                    <li className="flex items-start gap-2"><Check size={18} className="mt-0.5 shrink-0 text-green-600" />Perfil profissional público na plataforma</li>
+                    <li className="flex items-start gap-2"><Check size={18} className="mt-0.5 shrink-0 text-green-600" />Aparição nas buscas por especialidade e cidade</li>
+                    <li className="flex items-start gap-2"><Check size={18} className="mt-0.5 shrink-0 text-green-600" />Recebimento de contatos diretos de clientes</li>
+                  </ul>
+                </div>
+                <button type="button" onClick={openProfessionalSignup} className="btn-outline mt-6 w-full md:mt-auto">Criar perfil grátis</button>
+              </article>
+              <article className="relative flex h-full flex-col rounded-2xl border-2 border-orange-400 bg-white p-5 shadow-sm sm:p-6">
+                <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-orange-100 px-3 py-1 text-xs font-bold text-orange-800"><Star size={13} fill="currentColor" /> Mais Escolhido</span>
+                <div>
+                  <p className="pr-28 font-display text-xl font-bold text-navy-900">Destaque VIP</p>
+                  <p className="mt-1 text-sm font-semibold text-orange-800">Sob consulta</p>
+                  <ul className="mt-5 space-y-3 text-sm text-slate-700">
+                    <li className="flex items-start gap-2"><BadgeCheck size={18} className="mt-0.5 shrink-0 text-orange-600" />Selo de Profissional Verificado</li>
+                    <li className="flex items-start gap-2"><Rocket size={18} className="mt-0.5 shrink-0 text-orange-600" />Prioridade no topo das buscas da região</li>
+                    <li className="flex items-start gap-2"><Camera size={18} className="mt-0.5 shrink-0 text-orange-600" />Portfólio de fotos de obras realizadas</li>
+                    <li className="flex items-start gap-2"><Handshake size={18} className="mt-0.5 shrink-0 text-orange-600" />Maior destaque para orçamentos rápidos</li>
+                  </ul>
+                </div>
+                <button type="button" onClick={() => openVipPlans(2)} className="btn-primary mt-6 w-full md:mt-auto">Quero ser VIP <ArrowRight size={17} /></button>
+              </article>
             </div>
           </div>
         </section>
@@ -459,7 +486,12 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
       </div>
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultMode="signup" defaultUserType={authType} />
       {partnerRequest && <PartnerRequestModal initialRequest={partnerRequest} onClose={() => setPartnerRequest(null)} />}
-      {vipPlansOpen && <VipPlansModal onClose={() => setVipPlansOpen(false)} />}
+      {vipPlansOpen && <VipPlansModal
+        step={vipPlanStep}
+        onStepChange={setVipPlanStep}
+        onClose={() => setVipPlansOpen(false)}
+        onFreePlan={() => setVipPlansOpen(false)}
+      />}
     </>
   );
 }
@@ -598,30 +630,117 @@ function PartnerRequestModal({ initialRequest, onClose }: { initialRequest: Part
   );
 }
 
-function VipPlansModal({ onClose }: { onClose: () => void }) {
+interface VipProfessionalRequest {
+  fullName: string;
+  specialty: string;
+  whatsapp: string;
+  city: string;
+}
+
+const vipSpecialties = [
+  'Pedreiro / Mestre de Obras',
+  'Eletricista',
+  'Encanador / Hidráulica',
+  'Pintor / Acabamento',
+  'Engenheiro / Arquiteto',
+  'Outro serviço',
+];
+
+function VipPlansModal({
+  step,
+  onStepChange,
+  onClose,
+  onFreePlan,
+}: {
+  step: 1 | 2 | 3;
+  onStepChange: (step: 1 | 2 | 3) => void;
+  onClose: () => void;
+  onFreePlan: () => void;
+}) {
+  const [request, setRequest] = useState<VipProfessionalRequest>({ fullName: '', specialty: '', whatsapp: '', city: '' });
+  const [error, setError] = useState('');
+  const vipWhatsappNumber = (import.meta.env.VITE_WHATSAPP_PARTNERS_NUMBER || whatsappAssistantNumber || '5567996936753').replace(/\D/g, '');
+  const whatsappUrl = `https://wa.me/${vipWhatsappNumber}?text=${encodeURIComponent(
+    `Olá! Solicitei o Destaque VIP na ProntObra.\nNome: ${request.fullName}\nEspecialidade: ${request.specialty}`,
+  )}`;
+  const update = (key: keyof VipProfessionalRequest, value: string) => setRequest((current) => ({ ...current, [key]: value }));
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setError('');
+    if (request.whatsapp.replace(/\D/g, '').length !== 11) {
+      setError('Informe um WhatsApp com DDD e 11 dígitos.');
+      return;
+    }
+    onStepChange(3);
+  };
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-3 sm:p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="vip-modal-title" className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl sm:p-7" onClick={(event) => event.stopPropagation()}>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-600"><BadgeCheck size={17} /> Planos para profissionais e empresas</p>
-            <h2 id="vip-modal-title" className="mt-2 break-words font-display text-xl font-bold text-black sm:text-2xl">Escolha como quer aparecer</h2>
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-navy-950/70 p-2 backdrop-blur-sm sm:p-4" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="vip-modal-title" className="relative max-h-[calc(100dvh-1rem)] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:max-h-[92vh] sm:p-7" onClick={(event) => event.stopPropagation()}>
+        <button type="button" onClick={onClose} aria-label="Fechar" className="absolute right-4 top-4 rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={20} /></button>
+        {step === 1 ? (
+          <>
+            <p className="flex items-center gap-2 pr-10 text-xs font-bold uppercase tracking-wider text-orange-700"><BadgeCheck size={17} /> Planos para profissionais da construção</p>
+            <h2 id="vip-modal-title" className="mt-2 pr-10 font-display text-2xl font-bold text-navy-900 sm:text-3xl">Escolha como quer aparecer</h2>
+            <div className="mt-6 grid items-stretch gap-4 sm:grid-cols-2">
+              <article className="flex flex-col rounded-2xl border border-slate-200 p-5">
+                <h3 className="font-display text-lg font-bold text-navy-900">Plano Gratuito</h3>
+                <ul className="mt-4 flex-1 space-y-3 text-sm text-slate-700">
+                  <li className="flex gap-2"><Check size={17} className="shrink-0 text-green-600" />Perfil profissional público</li>
+                  <li className="flex gap-2"><Check size={17} className="shrink-0 text-green-600" />Buscas por especialidade e cidade</li>
+                  <li className="flex gap-2"><Check size={17} className="shrink-0 text-green-600" />Contato direto de clientes</li>
+                  <li className="flex gap-2"><X size={17} className="shrink-0 text-slate-400" />Sem selo verificado ou prioridade</li>
+                  <li className="flex gap-2"><X size={17} className="shrink-0 text-slate-400" />Sem portfólio VIP</li>
+                </ul>
+                <button type="button" onClick={onFreePlan} className="btn-outline mt-5 w-full">Continuar no Plano Gratuito</button>
+              </article>
+              <article className="flex flex-col rounded-2xl border-2 border-orange-400 bg-orange-50/60 p-5">
+                <h3 className="font-display text-lg font-bold text-orange-900">Destaque VIP</h3>
+                <ul className="mt-4 flex-1 space-y-3 text-sm text-slate-700">
+                  <li className="flex gap-2"><BadgeCheck size={17} className="shrink-0 text-orange-600" />Selo de Profissional Verificado</li>
+                  <li className="flex gap-2"><Rocket size={17} className="shrink-0 text-orange-600" />Prioridade no topo das buscas</li>
+                  <li className="flex gap-2"><Camera size={17} className="shrink-0 text-orange-600" />Portfólio de fotos de obras</li>
+                </ul>
+                <button type="button" onClick={() => onStepChange(2)} className="btn-primary mt-5 w-full">Tenho interesse no Destaque VIP</button>
+              </article>
+            </div>
+            <p className="mt-5 flex items-start gap-2 border-t border-slate-100 pt-4 text-xs leading-relaxed text-slate-500"><Info size={15} className="mt-0.5 shrink-0" />Valores e ativação são consultados com a equipe, conforme disponibilidade da sua região. Sem cobrança automática.</p>
+          </>
+        ) : step === 2 ? (
+          <>
+            <button type="button" onClick={() => onStepChange(1)} className="inline-flex items-center gap-2 pr-10 text-sm font-semibold text-orange-700 hover:text-orange-800">← Voltar aos planos</button>
+            <h2 id="vip-modal-title" className="mt-4 pr-10 font-display text-2xl font-bold text-navy-900 sm:text-3xl">Solicite seu Destaque VIP</h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">Preencha seus dados para nossa equipe ativar seu selo de destaque.</p>
+            <form onSubmit={submit} className="mt-6 grid gap-4 sm:grid-cols-2">
+              <label className="text-sm font-medium text-navy-700">Nome completo
+                <input required maxLength={120} autoComplete="name" value={request.fullName} onChange={(event) => update('fullName', event.target.value)} className="input-field mt-1" />
+              </label>
+              <label className="text-sm font-medium text-navy-700">Especialidade principal
+                <select required value={request.specialty} onChange={(event) => update('specialty', event.target.value)} className="input-field mt-1">
+                  <option value="">Selecione sua especialidade</option>{vipSpecialties.map((specialty) => <option key={specialty}>{specialty}</option>)}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-navy-700">WhatsApp com DDD
+                <input required type="tel" inputMode="tel" autoComplete="tel" maxLength={15} placeholder="(11) 99999-9999" value={request.whatsapp} onChange={(event) => update('whatsapp', formatPartnerPhone(event.target.value))} className="input-field mt-1" />
+              </label>
+              <label className="text-sm font-medium text-navy-700">Cidade / UF
+                <input required maxLength={120} placeholder="Ex.: Andradina / SP" value={request.city} onChange={(event) => update('city', event.target.value)} className="input-field mt-1" />
+              </label>
+              {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:col-span-2">{error}</p>}
+              <button type="submit" className="btn-primary sm:col-span-2">Enviar solicitação</button>
+            </form>
+          </>
+        ) : (
+          <div className="py-5 text-center sm:py-8">
+            <CheckCircle2 size={54} className="mx-auto text-green-600" />
+            <h2 id="vip-modal-title" className="mt-4 font-display text-2xl font-bold text-navy-900">Solicitação recebida!</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-600">Nossa equipe entrará em contato pelo WhatsApp informado para ativar seu Destaque VIP.</p>
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-700"><MessageCircle size={18} />Agilizar atendimento no WhatsApp</a>
+              <button type="button" onClick={onClose} className="btn-outline">Fechar</button>
+            </div>
           </div>
-          <button type="button" onClick={onClose} aria-label="Fechar" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={20} /></button>
-        </div>
-        <div className="mt-5 grid gap-3">
-          <div className="rounded-xl border border-slate-200 p-4">
-            <h3 className="font-bold text-black">Plano Gratuito</h3>
-            <p className="mt-1 text-sm leading-relaxed text-slate-600">Perfil público e participação nas buscas da ProntObra, sem selo VIP.</p>
-          </div>
-          <div className="rounded-xl border border-orange-300 bg-orange-50 p-4">
-            <h3 className="flex items-center gap-2 font-bold text-orange-800"><Award size={18} /> Destaque VIP</h3>
-            <p className="mt-1 text-sm leading-relaxed text-orange-900">Selo visual de Destaque VIP e prioridade no topo das buscas da página inicial, conforme disponibilidade e critérios da plataforma.</p>
-            <p className="mt-2 text-xs text-orange-800">Valores e ativação são consultados com a equipe; não há cobrança automática por este modal.</p>
-          </div>
-        </div>
-        <a href="mailto:prontobra@gmail.com?subject=Interesse%20no%20Destaque%20VIP" className="btn-primary mt-5 w-full">Tenho interesse no Destaque VIP</a>
-        <button type="button" onClick={onClose} className="btn-outline mt-2 w-full">Fechar</button>
+        )}
       </div>
     </div>
   );
