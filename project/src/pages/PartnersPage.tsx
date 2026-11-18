@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowRight, BadgePercent, Building2, Check, Handshake, PackageCheck, Star, Store, Truck, Wrench } from 'lucide-react';
 import PartnerRequestModal from '@/components/PartnerRequestModal';
 
@@ -43,7 +43,15 @@ const sponsorshipTiers = [
 
 export default function PartnersPage() {
   const [request, setRequest] = useState<{ category: string; tier: string } | null>(null);
+  const [activePillar, setActivePillar] = useState(0);
   const openRequest = (category = '', tier = '') => setRequest({ category, tier });
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActivePillar((current) => (current + 1) % categories.length);
+    }, 2600);
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
@@ -57,14 +65,43 @@ export default function PartnersPage() {
               Conhecer a vitrine <ArrowRight size={17} />
             </button>
           </div>
-          <div className="relative mx-auto w-full max-w-xl motion-safe:animate-slide-up">
-            <img src="https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=1200&q=85" alt="Ferramenta profissional para trabalhos de construção" className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]" />
-            <span className="absolute -left-2 top-5 inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-left-5 sm:top-10 sm:px-4">
-              <Store size={18} className="text-orange-600" /> Lojas de Materiais
-            </span>
-            <span className="absolute -bottom-4 right-3 inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-right-4 sm:bottom-8 sm:px-4">
-              <Truck size={18} className="text-orange-600" /> Locadoras e Construtoras
-            </span>
+          <div className="relative mx-auto h-[300px] w-full max-w-xl overflow-hidden rounded-[2rem] bg-navy-900 shadow-2xl motion-safe:animate-slide-up sm:h-[390px]">
+            <img
+              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
+              alt="Equipe trabalhando em uma obra"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
+              aria-label="Vídeo de apresentação do ecossistema da construção civil"
+              className="absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
+            >
+              <source src="https://videos.pexels.com/video-files/3195394/3195394-hd_1920_1080_25fps.mp4" type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/10 to-navy-950/20" />
+            <div className="absolute inset-x-3 bottom-3 flex flex-wrap justify-center gap-2 sm:inset-x-5 sm:bottom-5">
+              {[
+                { title: 'Lojas de Materiais', icon: Store },
+                { title: 'Locadoras de Equipamentos', icon: Wrench },
+                { title: 'Construtoras e Imobiliárias', icon: Building2 },
+              ].map(({ title, icon: Icon }, index) => (
+                <span
+                  key={title}
+                  aria-current={activePillar === index ? 'true' : undefined}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold shadow-lg transition duration-500 sm:text-sm ${
+                    activePillar === index
+                      ? 'scale-[1.03] border-orange-300 bg-[#F97316] text-white'
+                      : 'border-white/60 bg-white/90 text-navy-900'
+                  }`}
+                >
+                  <Icon size={16} /> {title}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </section>

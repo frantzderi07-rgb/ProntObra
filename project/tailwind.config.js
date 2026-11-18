@@ -51,6 +51,9 @@ export default {
         'slide-up': 'slideUp 0.4s ease-out',
         'slide-down': 'slideDown 0.3s ease-out',
         'logo-reveal': 'logoReveal 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'house-arc': 'houseArc 1.2s cubic-bezier(0.22, 1, 0.36, 1) both',
+        'brand-letter': 'brandLetter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'brand-slogan': 'brandSlogan 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
       },
       keyframes: {
         fadeIn: {
@@ -69,6 +72,19 @@ export default {
           '0%': { opacity: '0', transform: 'scale(0.9)' },
           '70%': { opacity: '1', transform: 'scale(1.02)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        houseArc: {
+          '0%': { opacity: '0', transform: 'translate(240px, -90px) rotate(24deg) scale(0.65)' },
+          '55%': { opacity: '1', transform: 'translate(76px, -52px) rotate(10deg) scale(0.9)' },
+          '100%': { opacity: '1', transform: 'translate(0, 0) rotate(0) scale(1)' },
+        },
+        brandLetter: {
+          '0%': { opacity: '0', transform: 'translateY(-28px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        brandSlogan: {
+          '0%': { opacity: '0', transform: 'translateY(-14px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },
     },
