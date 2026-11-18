@@ -29,9 +29,24 @@ const partnerCategories = [
 ];
 
 const sponsorshipTiers = [
-  { name: 'Ouro', detail: 'Máxima visibilidade', className: 'border-amber-300 bg-amber-50 text-amber-900' },
-  { name: 'Prata', detail: 'Presença em destaque', className: 'border-slate-300 bg-slate-50 text-slate-800' },
-  { name: 'Bronze', detail: 'Conexão com a comunidade', className: 'border-orange-200 bg-orange-50 text-orange-900' },
+  {
+    name: 'Ouro',
+    badge: 'Máximo Destaque',
+    benefits: ['Logo na página inicial', 'Selo Oficial Parceiro Ouro', 'Divulgação prioritária de ofertas'],
+    className: 'border-amber-300 bg-amber-50 text-amber-900',
+  },
+  {
+    name: 'Prata',
+    badge: '',
+    benefits: ['Destaque na categoria', 'Selo Parceiro Verificado', 'Link direto para WhatsApp / catálogo'],
+    className: 'border-slate-300 bg-slate-50 text-slate-800',
+  },
+  {
+    name: 'Bronze',
+    badge: '',
+    benefits: ['Presença fixa na Vitrine', 'Perfil comercial completo', 'Contato direto com profissionais'],
+    className: 'border-orange-200 bg-orange-50 text-orange-900',
+  },
 ];
 
 const coupons = [
@@ -389,9 +404,13 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
                 <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600 transition group-hover:bg-orange-500 group-hover:text-white"><Icon size={23} /></span>
                 <span className="mt-4 block font-display font-bold text-navy-900 group-hover:text-orange-700">{title}</span>
                 <span className="mt-2 block text-sm leading-relaxed text-slate-600">{detail}</span>
-                <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-orange-600">Quero ser parceiro <ArrowRight size={16} /></span>
               </button>
             ))}
+          </div>
+          <div className="mt-5 flex justify-center">
+            <button type="button" onClick={() => openPartnerRequest()} className="btn-primary">
+              Cadastrar minha empresa na vitrine <ArrowRight size={17} />
+            </button>
           </div>
 
           <div className="mt-8 rounded-3xl bg-navy-950 p-5 text-white sm:p-8">
@@ -402,10 +421,17 @@ export default function HomePage({ professionals = [], jobs = [] }: HomePageProp
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               {sponsorshipTiers.map((tier) => (
                 <button key={tier.name} type="button" onClick={() => openPartnerRequest(tier.name)}
-                  className={`rounded-2xl border p-5 text-left transition hover:-translate-y-1 hover:border-orange-400 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 ${tier.className}`}>
-                  <span className="text-lg font-extrabold">{tier.name}</span>
-                  <span className="mt-1 block text-sm opacity-75">{tier.detail}</span>
-                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-orange-700">Quero ser parceiro <ArrowRight size={16} /></span>
+                  className={`flex h-full flex-col rounded-2xl border p-5 text-left transition hover:-translate-y-1 hover:border-orange-400 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 ${tier.className}`}>
+                  <span className="flex w-full items-center justify-between gap-2">
+                    <span className="text-lg font-extrabold">{tier.name}</span>
+                    {tier.badge && <span className="inline-flex items-center gap-1 rounded-full bg-amber-200/80 px-2.5 py-1 text-[11px] font-bold text-amber-950"><Star size={12} fill="currentColor" />{tier.badge}</span>}
+                  </span>
+                  <ul className="mt-4 flex-1 space-y-2.5 text-sm">
+                    {tier.benefits.map((benefit) => (
+                      <li key={benefit} className="flex items-start gap-2"><Check size={16} className="mt-0.5 shrink-0 text-green-700" />{benefit}</li>
+                    ))}
+                  </ul>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-orange-700">Selecionar Cota {tier.name} <ArrowRight size={16} /></span>
                 </button>
               ))}
             </div>
@@ -561,8 +587,8 @@ function PartnerRequestModal({ initialRequest, onClose }: { initialRequest: Part
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-navy-950/70 p-2 backdrop-blur-sm sm:p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="partnership-modal-title" className="relative max-h-[calc(100dvh-1rem)] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl sm:max-h-[92vh] sm:p-8" onClick={(event) => event.stopPropagation()}>
+    <div className="fixed inset-0 z-[70] flex items-start overflow-y-auto bg-navy-950/70 p-3 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="partnership-modal-title" className="relative my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:max-h-[92vh] sm:p-8" onClick={(event) => event.stopPropagation()}>
         <button type="button" onClick={onClose} aria-label="Fechar" className="absolute right-4 top-4 rounded-lg p-2 text-slate-400 hover:bg-slate-100"><X size={20} /></button>
         {saved ? (
           <div className="py-6 text-center">
