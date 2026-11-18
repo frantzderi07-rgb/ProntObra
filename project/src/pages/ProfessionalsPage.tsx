@@ -105,8 +105,8 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
 
           <div className="relative mx-auto w-full max-w-xl motion-safe:animate-slide-up">
             <img
-              src="https://images.unsplash.com/photo-1616610269931-04d58b579ddf?auto=format&fit=crop&w=1200&q=85"
-              alt="Pedreiros trabalhando com tijolos em uma obra"
+              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
+              alt="Profissionais trabalhando em uma obra moderna"
               className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]"
               onError={(event) => {
                 event.currentTarget.onerror = null;
