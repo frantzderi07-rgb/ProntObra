@@ -159,6 +159,13 @@ export default function AuthModal({ open, onClose, defaultMode = 'signup', defau
           setError('As senhas não conferem. Verifique os campos de senha.');
           return;
         }
+        if (userType === 'professional') {
+          const experienceYears = Number(experience);
+          if (!experience.trim() || !Number.isInteger(experienceYears) || experienceYears < 0 || experienceYears > 70) {
+            setError('Informe uma experiência válida entre 0 e 70 anos.');
+            return;
+          }
+        }
         if (userType === 'professional' && specialties.length === 0) {
           setError('Selecione pelo menos uma especialidade.');
           return;

@@ -81,7 +81,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.sessionStorage.setItem('prontobra:referrer-user-id', referralId);
     }
 
-    const activeLocalUser = getActiveLocalUser();
+    if (isSupabaseConfigured && getActiveLocalUser()) {
+      clearActiveLocalUser();
+    }
+    const activeLocalUser = !isSupabaseConfigured ? getActiveLocalUser() : null;
     if (activeLocalUser) {
       setUser(activeLocalUser);
       void fetchProfile(activeLocalUser.id).finally(() => setLoading(false));
@@ -93,17 +96,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isSupabaseConfigured) {
       supabase.auth.getSession().then(({ data, error }) => {
         if (error) throw error;
-        if (!getActiveLocalUser()) {
-          setSession(data.session);
-          setUser(data.session?.user ?? null);
-          if (data.session?.user) void fetchProfile(data.session.user.id);
-        }
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+        if (data.session?.user) void fetchProfile(data.session.user.id);
       }).catch((error: unknown) => {
         console.error('Não foi possível restaurar a sessão:', error);
       }).finally(() => setLoading(false));
 
       const { data } = supabase.auth.onAuthStateChange((event, nextSession) => {
-        if (getActiveLocalUser()) return;
         setPasswordRecovery(event === 'PASSWORD_RECOVERY');
         setSession(nextSession);
         setUser(nextSession?.user ?? null);
@@ -114,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const syncLocalProfile = () => {
+      if (isSupabaseConfigured) return;
       const localUser = getActiveLocalUser();
       if (localUser) void fetchProfile(localUser.id);
     };
@@ -221,17 +222,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isSupabaseConfigured) {
       try {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (!error) return { error: null };
-        const localUser = await signInLocal(email, password);
-        if (localUser) {
-          setUser(localUser);
-          setSession(null);
-          await fetchProfile(localUser.id);
-          return { error: null };
-        }
-        return { error: authErrorMessage(error.message) };
+        if (error) return { error: authErrorMessage(error.message) };
+        return { error: null };
       } catch (error) {
-        console.warn('Login remoto indisponível; verificando conta local:', error);
+        console.error('Não foi possível conectar ao serviço de autenticação:', error);
+        return { error: 'Não foi possível conectar ao serviço de autenticação. Tente novamente.' };
       }
     }
 

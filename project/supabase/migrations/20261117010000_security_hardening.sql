@@ -2,6 +2,12 @@
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS is_approved boolean NOT NULL DEFAULT false;
 
+ALTER TABLE public.profiles
+  DROP CONSTRAINT IF EXISTS profiles_experience_years_check;
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_experience_years_check
+  CHECK (experience_years IS NULL OR (experience_years >= 0 AND experience_years <= 70));
+
 UPDATE public.profiles
 SET is_approved = true
 WHERE user_id IS NULL;
@@ -45,6 +51,11 @@ CREATE TRIGGER set_review_reviewer_name
   FOR EACH ROW EXECUTE FUNCTION public.set_review_reviewer_name();
 
 ALTER TABLE public.jobs
+  DROP CONSTRAINT IF EXISTS jobs_title_length_check,
+  DROP CONSTRAINT IF EXISTS jobs_description_length_check,
+  DROP CONSTRAINT IF EXISTS jobs_company_name_length_check,
+  DROP CONSTRAINT IF EXISTS jobs_city_length_check;
+ALTER TABLE public.jobs
   ADD CONSTRAINT jobs_title_length_check CHECK (char_length(btrim(title)) BETWEEN 2 AND 120) NOT VALID,
   ADD CONSTRAINT jobs_description_length_check CHECK (char_length(btrim(description)) BETWEEN 2 AND 5000) NOT VALID,
   ADD CONSTRAINT jobs_company_name_length_check CHECK (char_length(btrim(company_name)) BETWEEN 2 AND 120) NOT VALID,
@@ -60,8 +71,12 @@ SET tipo_parceria = CASE
 END
 WHERE tipo_parceria IS NULL;
 ALTER TABLE public.solicitacoes_parceria
+  DROP CONSTRAINT IF EXISTS solicitacoes_parceria_whatsapp_check;
+ALTER TABLE public.solicitacoes_parceria
   ADD CONSTRAINT solicitacoes_parceria_whatsapp_check CHECK (whatsapp ~ '^\d{11}$') NOT VALID;
 
+ALTER TABLE public.solicitacoes_parceria
+  DROP CONSTRAINT IF EXISTS solicitacoes_parceria_tipo_parceria_required_check;
 ALTER TABLE public.solicitacoes_parceria
   ADD CONSTRAINT solicitacoes_parceria_tipo_parceria_required_check
   CHECK (tipo_parceria IS NOT NULL);
@@ -100,7 +115,6 @@ ALTER TABLE public.solicitacoes_parceria ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cupons_desconto ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.indicacoes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cupons ENABLE ROW LEVEL SECURITY;
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "profiles_select_public" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_select_approved_public" ON public.profiles;
@@ -380,7 +394,7 @@ GRANT SELECT ON public.cupons TO anon, authenticated;
 GRANT ALL ON public.cupons TO service_role;
 
 ALTER TABLE public.cupons_desconto
-  DROP CONSTRAINT IF EXISTS cupons_desconto_coupon_slug_check;
+  DROP CONSTRAINT IF EXISTS cupons_desconto_coupon_slug_fkey;
 ALTER TABLE public.cupons_desconto
   ADD CONSTRAINT cupons_desconto_coupon_slug_fkey
   FOREIGN KEY (coupon_slug) REFERENCES public.cupons (slug) ON DELETE RESTRICT;
@@ -431,38 +445,3 @@ REVOKE INSERT ON public.cupons_desconto FROM authenticated;
 GRANT INSERT (user_id, coupon_slug) ON public.cupons_desconto TO authenticated;
 GRANT SELECT (user_id, coupon_slug, redemption_code, created_at)
   ON public.cupons_desconto TO authenticated;
-
-DROP POLICY IF EXISTS "Public can view ProntObra avatars" ON storage.objects;
-CREATE POLICY "Public can view ProntObra avatars"
-  ON storage.objects FOR SELECT TO public
-  USING (
-    bucket_id = 'avatars'
-    AND EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.user_id::text = (storage.foldername(name))[1]
-        AND p.is_approved = true
-    )
-  );
-
-DROP POLICY IF EXISTS "Public can view community media" ON storage.objects;
-CREATE POLICY "Public can view community media"
-  ON storage.objects FOR SELECT TO public
-  USING (
-    bucket_id = 'posts'
-    AND EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.user_id::text = (storage.foldername(name))[1]
-        AND p.is_approved = true
-        AND p.user_type IN ('professional', 'company')
-    )
-  );
-
-DROP POLICY IF EXISTS "Users can delete their own avatars" ON storage.objects;
-CREATE POLICY "Users can delete their own avatars"
-  ON storage.objects FOR DELETE TO authenticated
-  USING (bucket_id = 'avatars' AND (storage.foldername(name))[1] = auth.uid()::text);
-
-DROP POLICY IF EXISTS "Users can delete their community media" ON storage.objects;
-CREATE POLICY "Users can delete their community media"
-  ON storage.objects FOR DELETE TO authenticated
-  USING (bucket_id = 'posts' AND (storage.foldername(name))[1] = auth.uid()::text);

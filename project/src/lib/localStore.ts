@@ -34,10 +34,55 @@ export function notifyDataChanged() {
   window.dispatchEvent(new CustomEvent('prontobra:data-changed'));
 }
 
-export async function hashPassword(password: string): Promise<string> {
+async function legacyHashPassword(password: string): Promise<string> {
   const bytes = new TextEncoder().encode(password);
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function base64(bytes: Uint8Array): string {
+  return btoa(String.fromCharCode(...bytes));
+}
+
+function bytesFromBase64(value: string): Uint8Array {
+  return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  );
+  const derived = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: 150_000, hash: 'SHA-256' },
+    key,
+    256,
+  );
+  return `${base64(salt)}$${base64(new Uint8Array(derived))}`;
+}
+
+async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+  if (!storedHash.includes('$')) {
+    return storedHash === await legacyHashPassword(password);
+  }
+  const [saltValue, hashValue] = storedHash.split('$');
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  );
+  const derived = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: bytesFromBase64(saltValue), iterations: 150_000, hash: 'SHA-256' },
+    key,
+    256,
+  );
+  return hashValue === base64(new Uint8Array(derived));
 }
 
 export async function createLocalAccount(
@@ -73,7 +118,12 @@ export async function signInLocal(email: string, password: string): Promise<Loca
   const normalizedEmail = email.trim().toLowerCase();
   const accounts = read<LocalAccount[]>(ACCOUNT_KEY, []);
   const account = accounts.find((item) => item.email === normalizedEmail);
-  if (!account || account.passwordHash !== await hashPassword(password)) return null;
+  if (!account || !await verifyPassword(password, account.passwordHash)) return null;
+  if (!account.passwordHash.includes('$')) {
+    const accountIndex = accounts.findIndex((item) => item.email === normalizedEmail);
+    accounts[accountIndex] = { ...account, passwordHash: await hashPassword(password) };
+    write(ACCOUNT_KEY, accounts);
+  }
   const user = { id: account.id, email: account.email };
   localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(user));
   notifyDataChanged();

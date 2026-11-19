@@ -161,6 +161,10 @@ export default function DashboardPage() {
   }
 
   const handleSaveProfile = async () => {
+    if (!Number.isInteger(editForm.experience_years) || editForm.experience_years < 0 || editForm.experience_years > 70) {
+      setProfileMessage('Informe uma experiência válida entre 0 e 70 anos.');
+      return;
+    }
     setSavingProfile(true);
     let avatarUrl = editForm.avatar_url;
     if (profileAvatarFile) {
@@ -376,21 +380,35 @@ export default function DashboardPage() {
   };
 
   const handleUpdateApplicationStatus = async (appId: string, status: 'accepted' | 'rejected') => {
-    await supabase.from('applications').update({ status }).eq('id', appId);
+    setProfileMessage('');
+    const { error } = await supabase.from('applications').update({ status }).eq('id', appId);
+    if (error) {
+      setProfileMessage('Não foi possível atualizar o status da candidatura.');
+      return;
+    }
     if (isCompany) {
-      const updated = await fetchJobsByUser(user.id);
-      const appsMap: Record<string, (Application & { professional: Profile })[]> = {};
-      for (const job of updated) {
-        appsMap[job.id] = await fetchApplicationsForJob(job.id);
+      try {
+        const updated = await fetchJobsByUser(user.id);
+        const appsMap: Record<string, (Application & { professional: Profile })[]> = {};
+        for (const job of updated) {
+          appsMap[job.id] = await fetchApplicationsForJob(job.id);
+        }
+        setJobs(updated);
+        setApplicationsByJob(appsMap);
+      } catch (error) {
+        console.error('Não foi possível atualizar a lista de candidaturas:', error);
+        setProfileMessage('O status foi atualizado, mas não foi possível atualizar a lista.');
       }
-      setJobs(updated);
-      setApplicationsByJob(appsMap);
     }
   };
 
   const handleDeleteJob = async (jobId: string) => {
     if (!confirm('Deseja realmente excluir esta vaga?')) return;
-    await supabase.from('jobs').delete().eq('id', jobId);
+    const { error } = await supabase.from('jobs').delete().eq('id', jobId);
+    if (error) {
+      setProfileMessage('Não foi possível excluir a vaga.');
+      return;
+    }
     setJobs((prev) => prev.filter((j) => j.id !== jobId));
   };
 
@@ -631,7 +649,7 @@ export default function DashboardPage() {
                           </div>
                           <div>
                             <label className="mb-1 block text-sm font-medium text-navy-700">Anos de experiência</label>
-                            <input type="number" className="input-field" value={editForm.experience_years} onChange={(e) => setEditForm({ ...editForm, experience_years: parseInt(e.target.value) || 0 })} />
+                            <input type="number" min="0" max="70" className="input-field" value={editForm.experience_years} onChange={(e) => setEditForm({ ...editForm, experience_years: parseInt(e.target.value, 10) || 0 })} />
                           </div>
                         </>
                       )}
