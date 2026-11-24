@@ -1,6 +1,6 @@
 import { ArrowRight, Award, Eye, Handshake, HardHat, HeartHandshake, Lightbulb, LockKeyhole, ShieldCheck, Store, Target, UserRound, Users } from 'lucide-react';
 import QuickVideos from '@/components/QuickVideos';
-import { ProntObraHouseIcon } from '@/components/Logo';
+import { ProntObraMonogramIcon } from '@/components/Logo';
 
 const principles = [
   {
@@ -202,7 +202,7 @@ function BrandLogoAnimation() {
       <div className="rounded-3xl border border-white/60 bg-white/95 p-5 text-center shadow-xl sm:p-7">
         <div className="flex min-h-[190px] items-center justify-center overflow-visible sm:min-h-[230px]">
           <div className="flex items-center gap-2 sm:gap-4">
-            <ProntObraHouseIcon className="about-brand-house h-14 w-14 shrink-0 sm:h-24 sm:w-24" />
+            <ProntObraMonogramIcon className="about-brand-house h-14 w-14 shrink-0 sm:h-24 sm:w-24" />
             <div className="flex min-w-0 flex-col items-start">
               <h2 aria-label="ProntObra" className="flex whitespace-nowrap font-display text-2xl font-extrabold leading-none tracking-tight sm:text-5xl">
                 <span className="text-[#0F172A]">Pront</span>

@@ -1,3 +1,5 @@
+/// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-webhook-secret, x-hub-signature-256, x-api-key, client-token',
@@ -43,6 +45,7 @@ interface ProfileRow extends JsonRecord {
   whatsapp_feed_enabled: boolean;
   whatsapp_recommendations_enabled: boolean;
   is_available: boolean;
+  company_cnpj?: string | null;
 }
 
 const record = (value: unknown): JsonRecord => value !== null && typeof value === 'object' && !Array.isArray(value) ? value as JsonRecord : {};
@@ -59,8 +62,15 @@ function jsonResponse(body: unknown, status = 200) {
 
 function requiredEnv(name: string) {
   const value = Deno.env.get(name);
-  if (!value) throw new Error(`Missing required environment variable: ${name}`);
+  if (!value) throw new MissingEnvironmentVariableError(name);
   return value;
+}
+
+class MissingEnvironmentVariableError extends Error {
+  constructor(name: string) {
+    super(`Missing required environment variable: ${name}`);
+    this.name = 'MissingEnvironmentVariableError';
+  }
 }
 
 function equalConstantTime(first: string, second: string) {
@@ -212,7 +222,7 @@ async function sendWhatsAppMessage(to: string, message: string) {
   const baseUrl = requiredEnv('WHATSAPP_API_URL').replace(/\/$/, '');
   const token = requiredEnv('WHATSAPP_TOKEN');
   let url = '';
-  let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   let body: JsonRecord;
   if (provider === 'meta') {
     const phoneNumberId = requiredEnv('WHATSAPP_PHONE_NUMBER_ID');
@@ -291,8 +301,8 @@ function estimateMaterials(args: JsonRecord) {
   const floorArea = Math.max(0, Number(args.floor_area_m2) || 0);
   const paintArea = Math.max(0, Number(args.paint_area_m2) || wallArea);
   const brickCount = wallArea ? Math.ceil(wallArea * 25 * 1.1) : 0;
-  const cementBags = wallArea ? Math.ceil(wallArea * 0.15) : 0;
-  const sandCubicMeters = wallArea ? Number((wallArea * 0.02).toFixed(2)) : 0;
+  const cementBags = wallArea ? Math.ceil(wallArea * 0.15 * 1.1) : 0;
+  const sandCubicMeters = wallArea ? Number((wallArea * 0.02 * 1.1).toFixed(2)) : 0;
   const paintLiters = paintArea ? Math.ceil(paintArea * 0.2 * 1.1) : 0;
   const floorTilesArea = floorArea ? Number((floorArea * 1.1).toFixed(2)) : 0;
   return {
@@ -572,7 +582,45 @@ async function askAssistant(incoming: IncomingMessage, profile: ProfileRow | nul
   const messages: JsonRecord[] = [
     {
       role: 'system',
-      content: `Você é a IA de suporte da ProntObra, em português brasileiro. Categoria detectada: ${category}. Responda com clareza, sem inventar dados. Use ferramentas para consultas, cálculos, orçamentos e publicação. Nunca revele números de telefone de terceiros. Alertas a profissionais só podem ser enviados aos que ativaram whatsapp_alerts_enabled. Para publicar, exija consentimento ativo no perfil e o comando textual explícito publicar. Para orçamento, use somente dados do prestador autenticado; diga quando CPF/CNPJ não estiver cadastrado. Estimativas de materiais não substituem avaliação técnica.`,
+      content: `Você é a IA Oficial da ProntObra, a plataforma que conecta clientes, profissionais da construção civil, vagas de obra e lojas parceiras. Você atende pelo WhatsApp de forma rápida, prática, educada e adaptada ao perfil de cada usuário (profissional, empresa, pessoa_fisica ou visitor).
+
+Categoria detectada nesta conversa: ${category}.
+
+SUAS FUNÇÕES COMPLETAS:
+1. Calculadora de Materiais e Lista de Orçamento (Pronta para PDF/Envio):
+- Calcule quantidades estimadas de materiais (tijolos, cimento, areia, brita, argamassa, tinta, pisos, etc.) com base nas medidas enviadas por texto ou transcrição de áudio.
+- Inclua sempre 10% de margem de segurança para quebras e perdas.
+- Formate a resposta como uma Lista de Orçamento estruturada (com cabeçalho "Orçamento Estimado - ProntObra") pronta para ser gerada em PDF ou encaminhada direto às Lojas e Parceiros da plataforma.
+
+2. Atendimento Personalizado por Perfil (Category):
+- Se for pessoa_fisica (Cliente): Ajude a calcular materiais, encontrar profissionais verificados na região e orientar como publicar um pedido de serviço.
+- Se for profissional: Mostre como destacar o perfil, encontrar vagas ativas (jobs) na cidade, ativar alertas de novas oportunidades e usar cupons de desconto.
+- Se for empresa (Loja ou Construtora): Oriente sobre divulgação de ofertas, busca de mão de obra e parceria comercial na plataforma.
+- Se for visitor (Não cadastrado): Responda à dúvida inicial com eficiência e convide-o a criar uma conta gratuita na ProntObra.
+
+3. Cupons de Desconto e Benefícios (cupons_desconto):
+- Quando o usuário pedir descontos ou vantagens para comprar materiais, informe sobre os cupons ativos disponíveis para membros cadastrados e envie o link para resgate no painel da ProntObra.
+
+4. Publicação Rápida de Vagas e Pedidos de Obra:
+- Se um cliente ou empresa quiser contratar, faça até 3 perguntas rápidas (1. Especialidade/serviço; 2. Cidade; 3. Prazo de início) para montar o resumo da vaga e registrá-la ou direcionar ao link exato de publicação na ProntObra.
+
+5. Análise de Situações de Obra (Áudio, Texto ou Descrição de Foto):
+- Quando o usuário relatar um problema por texto, áudio transcrito ou descrição de imagem (ex.: infiltração, rachadura, troca de fiação, nivelamento de piso), explique as possíveis causas técnicas de forma simples, liste os materiais básicos envolvidos e recomende contratar um especialista qualificado pela ProntObra.
+
+6. Alertas e Notificações de Novas Vagas:
+- Oriente os profissionais sobre como ativar notificações de novas obras na região e informe quando houver oportunidades compatíveis com a especialidade deles na plataforma.
+
+REGRAS OBRIGATÓRIAS E LIMITES DE SEGURANÇA:
+- Nunca invente preços em reais (R$): Informe apenas as quantidades de materiais. Nunca estime valores financeiros de produtos ou mão de obra.
+- Foco exclusivo: Responda apenas sobre construção civil, reformas, materiais, profissionais da área e funcionamento da plataforma ProntObra. Recuse educadamente qualquer outro assunto.
+- Estilo WhatsApp: Use mensagens curtas, listas com marcadores e emojis moderados para leitura rápida no celular. Nunca envie blocos gigantes de texto.
+- Privacidade: Nunca exponha telefones, documentos ou dados privados de outros usuários do banco de dados.
+
+Use as ferramentas disponíveis para consultas, cálculos, orçamentos e publicação. Nunca invente dados.
+Alertas a profissionais só podem ser enviados aos que ativaram whatsapp_alerts_enabled.
+Para publicar, exija consentimento ativo no perfil e o comando textual explícito publicar.
+Para orçamento, use somente dados do prestador autenticado; diga quando CPF/CNPJ não estiver cadastrado.
+Estimativas de materiais não substituem avaliação técnica.`,
     },
     { role: 'user', content: incoming.text },
   ];
@@ -648,14 +696,22 @@ async function processMessage(incoming: IncomingMessage): Promise<{ reply: strin
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (request.method === 'GET') {
-    const url = new URL(request.url);
-    const mode = url.searchParams.get('hub.mode');
-    const token = url.searchParams.get('hub.verify_token');
-    const challenge = url.searchParams.get('hub.challenge');
-    if (mode === 'subscribe' && challenge && equalConstantTime(token ?? '', requiredEnv('WHATSAPP_VERIFY_TOKEN'))) {
-      return new Response(challenge, { headers: { ...corsHeaders, 'Content-Type': 'text/plain' } });
+    try {
+      const url = new URL(request.url);
+      const mode = url.searchParams.get('hub.mode');
+      const token = url.searchParams.get('hub.verify_token');
+      const challenge = url.searchParams.get('hub.challenge');
+      if (mode === 'subscribe' && challenge && equalConstantTime(token ?? '', requiredEnv('WHATSAPP_VERIFY_TOKEN'))) {
+        return new Response(challenge, { status: 200, headers: { ...corsHeaders, 'Content-Type': 'text/plain' } });
+      }
+      return jsonResponse({ error: 'Webhook verification failed.' }, 403);
+    } catch (error) {
+      console.error('WhatsApp webhook verification configuration error:', error);
+      const message = error instanceof MissingEnvironmentVariableError
+        ? error.message
+        : 'Webhook verification configuration unavailable.';
+      return jsonResponse({ error: message }, 500);
     }
-    return jsonResponse({ error: 'Webhook verification failed.' }, 403);
   }
   if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed.' }, 405);
 
@@ -704,6 +760,9 @@ Deno.serve(async (request) => {
     return jsonResponse({ ok: true });
   } catch (error) {
     console.error('WhatsApp AI webhook error:', error);
-    return jsonResponse({ error: 'Não foi possível processar a mensagem agora.' }, 500);
+    const message = error instanceof MissingEnvironmentVariableError
+      ? error.message
+      : 'Não foi possível processar a mensagem agora.';
+    return jsonResponse({ error: message }, 500);
   }
 });

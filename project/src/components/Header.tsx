@@ -49,7 +49,7 @@ export default function Header() {
     <>
       <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <button type="button" onClick={() => goTo({ name: 'home' })} className="shrink-0" aria-label="ProntObra - Início"><Logo /></button>
+          <button type="button" onClick={() => goTo({ name: 'home' })} className="max-w-[13rem] shrink-0 sm:max-w-none" aria-label="ProntObra - Início"><Logo /></button>
           <nav aria-label="Navegação principal" className="hidden items-center gap-4 xl:flex 2xl:gap-5">{links.map(navLink)}</nav>
           <div className="hidden shrink-0 items-center gap-2 xl:flex">
             {user ? (
