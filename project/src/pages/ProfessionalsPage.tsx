@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, BadgeCheck, BriefcaseBusiness, HardHat, MapPin, ShieldCheck, Sparkles, Star, Users, X, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BadgeCheck, BriefcaseBusiness, Check, HardHat, MapPin, ShieldCheck, Sparkles, Star, Users, X, Zap } from 'lucide-react';
 import { BRAZIL_STATES, SPECIALTIES } from '@/lib/types';
 import type { ProfessionalWithStats } from '@/lib/types';
 import { fetchProfessionals } from '@/lib/queries';
@@ -72,52 +72,63 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
   const otherProfessionals = filteredProfessionals.filter((professional) => !communityTalentIds.has(professional.id));
 
   return (
-    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
-      <section className="overflow-hidden bg-[#f8f5ef]">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-16">
+    <div className="min-h-screen animate-fade-in bg-[#F7F5F0]">
+      <section className="overflow-hidden bg-[#F7F5F0] px-4 pb-8 pt-5 sm:px-6 sm:pb-12 lg:px-8">
+        <nav aria-label="Caminho de navegação" className="mx-auto mb-5 flex max-w-7xl items-center gap-2 text-xs">
+          <button type="button" onClick={() => navigate({ name: 'home' })} className="inline-flex items-center gap-1 font-semibold text-stone-600 transition hover:text-[#D95D24]"><ArrowLeft size={14} /> Voltar</button>
+          <span aria-hidden="true" className="text-stone-300">|</span>
+          <button type="button" onClick={() => navigate({ name: 'home' })} className="font-medium text-stone-500 transition hover:text-[#D95D24]">Início</button>
+          <span aria-hidden="true" className="text-stone-300">›</span>
+          <span aria-current="page" className="font-semibold text-stone-800">Profissionais</span>
+        </nav>
+        <div className="mx-auto grid max-w-7xl items-center gap-10 rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8 md:p-12 lg:grid-cols-2 lg:gap-14">
           <div className="motion-safe:animate-slide-up">
-            <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2 text-sm font-bold text-orange-800">
+            <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
               <Sparkles size={16} /> Conexões que constroem
             </span>
-            <h1 className="mt-5 max-w-xl font-display text-4xl font-extrabold leading-tight text-navy-950 sm:text-5xl">
-              Profissionais para sua obra
+            <h1 className="mt-5 max-w-xl text-4xl font-extrabold leading-tight tracking-tight text-stone-900 md:text-5xl">
+              Tire sua obra do papel com as pessoas certas
             </h1>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-stone-600">
               Encontre talentos da construção na sua região, compare perfis e fale diretamente com quem transforma projetos em realidade.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={() => filtersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                className="btn-outline justify-center !border-slate-300 !text-navy-900 hover:!border-orange-400"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 transition hover:border-stone-400 hover:bg-stone-50"
               >
                 <MapPin size={17} /> Encontrar na minha cidade
               </button>
-              <button type="button" onClick={() => setAuthOpen(true)} className="btn-primary justify-center !bg-[#F97316] hover:!bg-orange-600">
+              <button type="button" onClick={() => setAuthOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D95D24] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#C24E1B]">
                 Sou Profissional: Cadastrar Grátis <ArrowRight size={17} />
               </button>
             </div>
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-slate-600">
-              <span className="inline-flex items-center gap-2"><ShieldCheck size={17} className="text-green-700" /> Perfis e avaliações em um só lugar</span>
-              <span className="inline-flex items-center gap-2"><Zap size={17} className="text-orange-600" /> Contato direto</span>
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-stone-600">
+              <span className="inline-flex items-center gap-2"><ShieldCheck size={17} className="text-stone-500" /> Perfis e avaliações em um só lugar</span>
+              <span className="inline-flex items-center gap-2"><Zap size={17} className="text-blue-600" /> Contato direto</span>
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-xl motion-safe:animate-slide-up">
-            <img
-              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
-              alt="Profissionais trabalhando em uma obra moderna"
-              className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]"
-              onError={(event) => {
-                event.currentTarget.onerror = null;
-                event.currentTarget.src = 'https://images.unsplash.com/photo-1673865641469-34498379d8af?auto=format&fit=crop&w=1200&q=85';
-              }}
-            />
-            <div className="absolute -left-2 top-5 flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-left-5 sm:top-10 sm:px-4">
-              <BadgeCheck size={19} className="text-green-600" /> Perfis Verificados
+          <div className="relative mx-auto w-full max-w-xl px-2 py-3 motion-safe:animate-slide-up sm:px-4">
+            <div aria-hidden="true" className="absolute -inset-2 rounded-[2rem] bg-blue-600/15 blur-2xl" />
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-40" style={{ backgroundImage: 'linear-gradient(90deg, transparent 49.8%, #3B82F6 50%, transparent 50.2%), linear-gradient(0deg, transparent 49.8%, #3B82F6 50%, transparent 50.2%)', backgroundSize: '36px 36px' }} />
+            <div className="relative overflow-hidden rounded-2xl ring-1 ring-blue-400/40 shadow-[0_18px_50px_-20px_rgba(29,78,216,0.65)]">
+              <img
+                src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
+                alt="Profissionais da construção trabalhando em uma obra"
+                className="h-[300px] w-full object-cover sm:h-[390px]"
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = 'https://images.unsplash.com/photo-1673865641469-34498379d8af?auto=format&fit=crop&w=1200&q=85';
+                }}
+              />
             </div>
-            <div className="absolute -bottom-4 right-3 flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-right-4 sm:bottom-8 sm:px-4">
-              <Zap size={18} className="text-orange-500" /> Contato Direto
+            <div className="absolute left-0 top-8 flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-4 py-2.5 text-sm font-semibold text-stone-900 shadow-md backdrop-blur sm:left-2 sm:top-10">
+              <Check size={18} className="text-blue-600" /> Perfis Verificados
+            </div>
+            <div className="absolute bottom-7 left-0 flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-4 py-2.5 text-sm font-semibold text-stone-900 shadow-md backdrop-blur sm:bottom-10 sm:left-2">
+              <Zap size={18} className="text-blue-600" /> Contato Direto
             </div>
           </div>
         </div>

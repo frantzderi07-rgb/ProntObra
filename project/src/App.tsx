@@ -93,7 +93,7 @@ function AppContent() {
   return (
     <div className="min-h-screen flex flex-col bg-[#fcfaf6] text-slate-900">
       <Header />
-      {page.name !== 'home' && <Breadcrumbs />}
+      {page.name !== 'home' && page.name !== 'professionals' && <Breadcrumbs />}
       <main className="flex-1">
         {renderPage()}
       </main>

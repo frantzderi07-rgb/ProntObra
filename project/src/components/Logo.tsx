@@ -3,6 +3,7 @@ import React from 'react';
 interface LogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  tone?: 'default' | 'light';
 }
 
 interface ProntObraMonogramIconProps {
@@ -12,17 +13,14 @@ interface ProntObraMonogramIconProps {
 export function ProntObraMonogramIcon({ className = '' }: ProntObraMonogramIconProps) {
   return (
     <svg viewBox="0 0 48 48" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="48" height="48" rx="8" fill="#0B2239" />
-      <path d="M15 17V11H19V15" stroke="#FFFFFF" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M10 22L19 15L28 22" stroke="#FFFFFF" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M12 21V37M12 22H20A5 5 0 0 1 20 32H12" stroke="#FFFFFF" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M29 19L35 22V28L30 31L27 29" stroke="#F97316" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M30 31L26.5 37L35.5 34.5" stroke="#F97316" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+      <rect width="48" height="48" rx="10" fill="#07193D" />
+      <text x="7" y="34" fill="#FFFFFF" fontFamily="Arial, sans-serif" fontSize="27" fontWeight="800" letterSpacing="-3">P</text>
+      <text x="22" y="34" fill="#D95D24" fontFamily="Arial, sans-serif" fontSize="27" fontWeight="800" letterSpacing="-3">O</text>
     </svg>
   );
 }
 
-export default function Logo({ className = '', size = 'md' }: LogoProps) {
+export default function Logo({ className = '', size = 'md', tone = 'default' }: LogoProps) {
   const iconSizes = {
     sm: 'h-10 w-10',
     md: 'h-11 w-11',
@@ -34,21 +32,23 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
     md: 'text-xl sm:text-2xl',
     lg: 'text-2xl sm:text-3xl',
   };
+  const titleColor = tone === 'light' ? 'text-white' : 'text-[#07193D]';
+  const sloganColor = tone === 'light' ? 'text-white/85' : 'text-slate-700';
 
   return (
     <div className={`group inline-flex max-w-full select-none items-center gap-2.5 py-1 ${className}`}>
       <ProntObraMonogramIcon className={`${iconSizes[size]} shrink-0 transition-transform duration-300 ease-out group-hover:scale-105`} />
       <div className="min-w-0">
         <div translate="no" className="notranslate flex items-baseline whitespace-nowrap leading-none">
-          <span className={`${titleSizes[size]} font-extrabold tracking-tight text-[#0B2239]`}>
+          <span className={`${titleSizes[size]} font-extrabold tracking-tight ${titleColor}`}>
             Pront
           </span>
-          <span className={`${titleSizes[size]} font-extrabold tracking-tight text-[#F97316]`}>
+          <span className={`${titleSizes[size]} font-extrabold tracking-tight text-[#D95D24]`}>
             Obra
           </span>
         </div>
-        <span translate="no" className="notranslate mt-1 block text-left text-[8px] font-semibold leading-tight tracking-wide text-slate-700 sm:text-[10px]">
-          Quem entende de obra, encontra na ProntObra.
+        <span translate="no" className={`notranslate mt-1 block text-left text-[8px] font-semibold leading-tight tracking-wide sm:text-[10px] ${sloganColor}`}>
+          Quem entende de obra, encontra na ProntObra
         </span>
       </div>
     </div>

@@ -20,6 +20,7 @@ const links: { label: string; page: Page }[] = [
 export default function Header() {
   const { user, signOut } = useAuth();
   const { page, navigate } = useNav();
+  const isProfessionalsPage = page.name === 'professionals';
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
@@ -40,17 +41,36 @@ export default function Header() {
   };
   const navLink = ({ label, page: target }: typeof links[number]) => (
     <button key={label} type="button" onClick={() => goTo(target)} aria-current={isActive(target) ? 'page' : undefined}
-      className={`whitespace-nowrap text-sm font-medium transition-colors ${isActive(target) ? 'text-orange-600' : 'text-navy-700 hover:text-orange-600'}`}>
+      className={`whitespace-nowrap text-sm font-medium transition-colors ${isProfessionalsPage
+        ? `relative py-2 ${isActive(target) ? 'text-[#D95D24] after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:rounded-full after:bg-[#D95D24]' : 'text-stone-700 hover:text-[#D95D24]'}`
+        : isActive(target) ? 'text-orange-600' : 'text-navy-700 hover:text-orange-600'}`}>
       {label}
     </button>
   );
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <button type="button" onClick={() => goTo({ name: 'home' })} className="max-w-[13rem] shrink-0 sm:max-w-none" aria-label="ProntObra - Início"><Logo /></button>
-          <nav aria-label="Navegação principal" className="hidden items-center gap-4 xl:flex 2xl:gap-5">{links.map(navLink)}</nav>
+      <header className={`sticky top-0 z-40 ${isProfessionalsPage ? '' : 'border-b border-gray-100'}`}>
+        {isProfessionalsPage && (
+          <div className="relative isolate overflow-hidden bg-gradient-to-r from-[#07193D] via-[#0B2863] to-[#113D94]">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-30" style={{ backgroundImage: 'linear-gradient(90deg, transparent 49.8%, #3B82F6 50%, transparent 50.2%), linear-gradient(0deg, transparent 49.8%, #3B82F6 50%, transparent 50.2%)', backgroundSize: '56px 56px' }} />
+            <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-32 h-72 w-72 rounded-full bg-blue-400/30 blur-3xl" />
+            <div className="relative mx-auto flex min-h-24 max-w-7xl items-center px-4 py-4 sm:px-6 lg:px-8">
+              <button type="button" onClick={() => goTo({ name: 'home' })} className="text-left" aria-label="ProntObra - Início">
+                <Logo size="lg" tone="light" />
+              </button>
+            </div>
+          </div>
+        )}
+        <div className={`border-b ${isProfessionalsPage ? 'border-stone-200 bg-white/95 backdrop-blur-md' : 'border-gray-100 bg-white/95 backdrop-blur-md'}`}>
+        <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6 lg:px-8">
+          <button type="button" onClick={() => goTo({ name: 'home' })} className="max-w-[13rem] shrink-0 sm:max-w-none" aria-label="ProntObra - Início"><Logo size="sm" /></button>
+          <nav aria-label="Navegação principal" className="hidden items-center gap-3 xl:flex 2xl:gap-4">
+            {links.map(navLink)}
+            {!user && isProfessionalsPage && (
+              <button type="button" onClick={() => openAuth('signin', 'professional')} className="whitespace-nowrap py-2 text-sm font-medium text-stone-700 transition-colors hover:text-[#D95D24]">Entrar</button>
+            )}
+          </nav>
           <div className="hidden shrink-0 items-center gap-2 xl:flex">
             {user ? (
               <>
@@ -59,9 +79,8 @@ export default function Header() {
               </>
             ) : (
               <>
-                <button type="button" onClick={() => openAuth('signin', 'professional')} className="btn-ghost !px-2">Entrar</button>
-                <button type="button" onClick={() => openAuth('signup', 'professional')} className="btn-primary !px-3 !py-2.5"><Users size={16} /> Sou Profissional</button>
-                <button type="button" onClick={() => openAuth('signup', 'client')} className="btn-secondary !px-3 !py-2.5"><Briefcase size={16} /> Contratar</button>
+                <button type="button" onClick={() => openAuth('signup', 'professional')} className={isProfessionalsPage ? 'whitespace-nowrap rounded-full bg-[#D95D24] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#C24E1B]' : 'btn-primary !px-3 !py-2.5'}><Users size={16} /> Sou Profissional</button>
+                <button type="button" onClick={() => openAuth('signup', 'client')} className={isProfessionalsPage ? 'whitespace-nowrap rounded-full bg-[#1C1917] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800' : 'btn-secondary !px-3 !py-2.5'}><Briefcase size={16} /> Contratar</button>
               </>
             )}
           </div>
@@ -81,13 +100,14 @@ export default function Header() {
               ) : (
                 <>
                   <button type="button" onClick={() => openAuth('signin', 'professional')} className="btn-outline w-full">Entrar</button>
-                  <button type="button" onClick={() => openAuth('signup', 'professional')} className="btn-primary w-full"><Users size={17} /> Sou Profissional</button>
-                  <button type="button" onClick={() => openAuth('signup', 'client')} className="btn-secondary w-full"><Briefcase size={17} /> Contratar</button>
+                  <button type="button" onClick={() => openAuth('signup', 'professional')} className={isProfessionalsPage ? 'inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#D95D24] px-4 py-3 text-sm font-semibold text-white' : 'btn-primary w-full'}><Users size={17} /> Sou Profissional</button>
+                  <button type="button" onClick={() => openAuth('signup', 'client')} className={isProfessionalsPage ? 'inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#1C1917] px-4 py-3 text-sm font-semibold text-white' : 'btn-secondary w-full'}><Briefcase size={17} /> Contratar</button>
                 </>
               )}
             </div>
           </div>
         )}
+        </div>
       </header>
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultMode={authMode} defaultUserType={authUserType} />
     </>
