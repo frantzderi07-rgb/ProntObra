@@ -7,6 +7,7 @@ import { fetchJobs } from '@/lib/queries';
 import { whatsappAssistantNumber } from '@/lib/supabase';
 import JobCard from '@/components/JobCard';
 import CitySelectorSpMs from '@/components/CitySelectorSpMs';
+import PageHero from '@/components/PageHero';
 
 const opportunityModels = [
   {
@@ -79,47 +80,44 @@ export default function JobsPage({ initialSpecialty = 'all', initialCity = 'all'
   };
 
   return (
-    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
-      <section className="overflow-hidden bg-[#f8f5ef]">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-16">
-          <div className="motion-safe:animate-slide-up">
-            <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2 text-sm font-bold tracking-wide text-orange-800">
-              <Briefcase size={16} /> OPORTUNIDADES NA CONSTRUÇÃO
-            </span>
-            <h1 className="mt-5 max-w-xl font-display text-4xl font-extrabold leading-tight text-navy-950 sm:text-5xl">
-              Vagas e obras abertas na sua região
-            </h1>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
-              Encontre novas oportunidades, conecte-se com empresas e dê o próximo passo na sua carreira na construção.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <button type="button" onClick={() => navigate({ name: 'post-job' })} className="btn-primary justify-center !bg-[#F97316] hover:!bg-orange-600">
+    <div className="min-h-screen animate-fade-in bg-[#F7F5F0]">
+      <PageHero
+        pageLabel="Vagas"
+        eyebrow="Oportunidades na construção"
+        icon={Briefcase}
+        title="Vagas e obras abertas na sua região"
+        description="Encontre novas oportunidades, conecte-se com empresas e dê o próximo passo na sua carreira na construção."
+        actions={(
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <button type="button" onClick={() => navigate({ name: 'post-job' })} className="btn-primary justify-center">
                 Publicar uma vaga <ArrowRight size={17} />
               </button>
-              <button type="button" onClick={() => navigate({ name: 'professionals' })} className="btn-outline justify-center !border-slate-300 !text-navy-900 hover:!border-orange-400">
+              <button type="button" onClick={() => navigate({ name: 'professionals' })} className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 hover:border-blue-300">
                 Ver profissionais
               </button>
-            </div>
-            <button type="button" onClick={() => filtersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-orange-700">
-              Explorar oportunidades <ArrowRight size={15} />
-            </button>
+              <button type="button" onClick={() => filtersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-blue-800 transition hover:bg-blue-50">
+                Explorar oportunidades <ArrowRight size={15} />
+              </button>
           </div>
-
-          <div className="relative mx-auto w-full max-w-xl motion-safe:animate-slide-up">
-            <img
-              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
-              alt="Pedreiro trabalhando em uma obra"
-              className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]"
-            />
-            <span className="absolute -left-2 top-5 inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-left-5 sm:top-10 sm:px-4">
-              <HardHat size={19} className="text-orange-600" /> Obras Ativas
+        )}
+        visual={(
+          <img
+            src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
+            alt="Pedreiro trabalhando em uma obra"
+            className="h-[300px] w-full object-cover sm:h-[390px]"
+          />
+        )}
+        floatingBadges={(
+          <>
+            <span className="absolute left-0 top-8 inline-flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-4 py-2.5 text-sm font-semibold text-stone-900 shadow-md sm:left-2 sm:top-10">
+              <HardHat size={19} className="text-blue-600" /> Obras Ativas
             </span>
-            <span className="absolute -bottom-4 right-3 inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/95 px-3 py-2.5 text-sm font-semibold text-navy-900 shadow-lg motion-safe:animate-pulse sm:-right-4 sm:bottom-8 sm:px-4">
-              <CheckCircle2 size={18} className="text-green-600" /> Contratação Direta
+            <span className="absolute bottom-7 right-0 inline-flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-4 py-2.5 text-sm font-semibold text-stone-900 shadow-md sm:bottom-10 sm:right-2">
+              <CheckCircle2 size={18} className="text-blue-600" /> Contratação Direta
             </span>
-          </div>
-        </div>
-      </section>
+          </>
+        )}
+      />
 
       <main className="mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
         <section ref={filtersRef} aria-label="Filtros de oportunidades" className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-4 shadow-md shadow-slate-900/5 sm:p-6">
@@ -179,16 +177,16 @@ export default function JobsPage({ initialSpecialty = 'all', initialCity = 'all'
                 <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-slate-600">Publique uma oportunidade para encontrar profissionais ou ajuste os filtros para explorar outras regiões e especialidades.</p>
                 <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
                   <button type="button" onClick={clearFilters} className="btn-outline justify-center">Limpar filtros</button>
-                  <button type="button" onClick={() => navigate({ name: 'post-job' })} className="btn-primary justify-center !bg-[#F97316] hover:!bg-orange-600">Publicar uma vaga <ArrowRight size={17} /></button>
+                  <button type="button" onClick={() => navigate({ name: 'post-job' })} className="btn-primary justify-center">Publicar uma vaga <ArrowRight size={17} /></button>
                 </div>
               </section>
 
-              <form onSubmit={submitJobAlert} className="rounded-3xl bg-[#1C1917] p-6 text-white shadow-lg sm:p-8">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/15 text-[#F97316]"><MessageCircle size={23} /></span>
-                <p className="mt-4 text-xs font-bold uppercase tracking-wider text-orange-300">Alerta de Vagas no WhatsApp</p>
+              <form onSubmit={submitJobAlert} className="rounded-3xl border border-blue-100 bg-white p-6 text-stone-900 shadow-sm sm:p-8">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-700"><MessageCircle size={23} /></span>
+                <p className="mt-4 text-xs font-bold uppercase tracking-wider text-blue-700">Alerta de Vagas no WhatsApp</p>
                 <h3 className="mt-1 font-display text-xl font-bold">Saiba quando surgir uma obra na sua cidade.</h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/70">Informe seu WhatsApp e selecione a cidade nos filtros. Você poderá confirmar o alerta diretamente pelo WhatsApp.</p>
-                <label className="mt-4 block text-sm font-medium text-white">
+                <p className="mt-2 text-sm leading-relaxed text-stone-600">Informe seu WhatsApp e selecione a cidade nos filtros. Você poderá confirmar o alerta diretamente pelo WhatsApp.</p>
+                <label className="mt-4 block text-sm font-medium text-stone-700">
                   WhatsApp com DDD
                   <input
                     type="tel"
@@ -198,16 +196,16 @@ export default function JobsPage({ initialSpecialty = 'all', initialCity = 'all'
                     value={alertPhone}
                     onChange={(event) => { setAlertPhone(formatPhone(event.target.value)); setAlertUrl(''); }}
                     placeholder="(11) 99999-9999"
-                    className="input-field mt-1 border-white/20 bg-white text-slate-900"
+                    className="input-field mt-1 border-stone-300 bg-white text-slate-900"
                   />
                 </label>
-                {alertError && <p role="alert" className="mt-3 rounded-lg bg-red-500/15 p-3 text-sm text-red-100">{alertError}</p>}
+                {alertError && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{alertError}</p>}
                 {alertUrl ? (
                   <a href={alertUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700">
                     Confirmar alerta no WhatsApp <ArrowRight size={16} />
                   </a>
                 ) : (
-                  <button type="submit" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#F97316] px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-600">
+                  <button type="submit" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#D95D24] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#C24E1B]">
                     Preparar meu alerta <ArrowRight size={16} />
                   </button>
                 )}

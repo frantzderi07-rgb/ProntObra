@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, BadgeCheck, BriefcaseBusiness, Check, HardHat, MapPin, ShieldCheck, Sparkles, Star, Users, X, Zap } from 'lucide-react';
+import { ArrowRight, BadgeCheck, BriefcaseBusiness, Check, HardHat, MapPin, ShieldCheck, Sparkles, Star, Users, X, Zap } from 'lucide-react';
 import { BRAZIL_STATES, SPECIALTIES } from '@/lib/types';
 import type { ProfessionalWithStats } from '@/lib/types';
 import { fetchProfessionals } from '@/lib/queries';
@@ -8,6 +8,7 @@ import ProfessionalCard from '@/components/ProfessionalCard';
 import CitySelectorSpMs from '@/components/CitySelectorSpMs';
 import ProfessionalVisibilitySection from '@/components/ProfessionalVisibilitySection';
 import AuthModal from '@/components/AuthModal';
+import PageHero from '@/components/PageHero';
 
 interface ProfessionalsPageProps {
   initialSpecialty?: string;
@@ -73,26 +74,15 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
 
   return (
     <div className="min-h-screen animate-fade-in bg-[#F7F5F0]">
-      <section className="overflow-hidden bg-[#F7F5F0] px-4 pb-8 pt-5 sm:px-6 sm:pb-12 lg:px-8">
-        <nav aria-label="Caminho de navegação" className="mx-auto mb-5 flex max-w-7xl items-center gap-2 text-xs">
-          <button type="button" onClick={() => navigate({ name: 'home' })} className="inline-flex items-center gap-1 font-semibold text-stone-600 transition hover:text-[#D95D24]"><ArrowLeft size={14} /> Voltar</button>
-          <span aria-hidden="true" className="text-stone-300">|</span>
-          <button type="button" onClick={() => navigate({ name: 'home' })} className="font-medium text-stone-500 transition hover:text-[#D95D24]">Início</button>
-          <span aria-hidden="true" className="text-stone-300">›</span>
-          <span aria-current="page" className="font-semibold text-stone-800">Profissionais</span>
-        </nav>
-        <div className="mx-auto grid max-w-7xl items-center gap-10 rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8 md:p-12 lg:grid-cols-2 lg:gap-14">
-          <div className="motion-safe:animate-slide-up">
-            <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
-              <Sparkles size={16} /> Conexões que constroem
-            </span>
-            <h1 className="mt-5 max-w-xl text-4xl font-extrabold leading-tight tracking-tight text-stone-900 md:text-5xl">
-              Tire sua obra do papel com as pessoas certas
-            </h1>
-            <p className="mt-4 max-w-xl text-lg leading-relaxed text-stone-600">
-              Encontre talentos da construção na sua região, compare perfis e fale diretamente com quem transforma projetos em realidade.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+      <PageHero
+        pageLabel="Profissionais"
+        eyebrow="Conexões que constroem"
+        icon={Sparkles}
+        title="Tire sua obra do papel com as pessoas certas"
+        description="Encontre talentos da construção na sua região, compare perfis e fale diretamente com quem transforma projetos em realidade."
+        actions={(
+          <>
+            <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={() => filtersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
@@ -108,50 +98,49 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
               <span className="inline-flex items-center gap-2"><ShieldCheck size={17} className="text-stone-500" /> Perfis e avaliações em um só lugar</span>
               <span className="inline-flex items-center gap-2"><Zap size={17} className="text-blue-600" /> Contato direto</span>
             </div>
+        </>
+        )}
+        visual={(
+        <img
+          src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
+          alt="Profissionais da construção trabalhando em uma obra"
+          className="h-[300px] w-full object-cover sm:h-[390px]"
+          onError={(event) => {
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = 'https://images.unsplash.com/photo-1673865641469-34498379d8af?auto=format&fit=crop&w=1200&q=85';
+          }}
+        />
+        )}
+        floatingBadges={(
+        <>
+          <div className="absolute left-0 top-8 flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-4 py-2.5 text-sm font-semibold text-stone-900 shadow-md backdrop-blur sm:left-2 sm:top-10">
+            <Check size={18} className="text-blue-600" /> Perfis Verificados
           </div>
-
-          <div className="relative mx-auto w-full max-w-xl px-2 py-3 motion-safe:animate-slide-up sm:px-4">
-            <div aria-hidden="true" className="absolute -inset-2 rounded-[2rem] bg-blue-600/15 blur-2xl" />
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-40" style={{ backgroundImage: 'linear-gradient(90deg, transparent 49.8%, #3B82F6 50%, transparent 50.2%), linear-gradient(0deg, transparent 49.8%, #3B82F6 50%, transparent 50.2%)', backgroundSize: '36px 36px' }} />
-            <div className="relative overflow-hidden rounded-2xl ring-1 ring-blue-400/40 shadow-[0_18px_50px_-20px_rgba(29,78,216,0.65)]">
-              <img
-                src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85"
-                alt="Profissionais da construção trabalhando em uma obra"
-                className="h-[300px] w-full object-cover sm:h-[390px]"
-                onError={(event) => {
-                  event.currentTarget.onerror = null;
-                  event.currentTarget.src = 'https://images.unsplash.com/photo-1673865641469-34498379d8af?auto=format&fit=crop&w=1200&q=85';
-                }}
-              />
-            </div>
-            <div className="absolute left-0 top-8 flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-4 py-2.5 text-sm font-semibold text-stone-900 shadow-md backdrop-blur sm:left-2 sm:top-10">
-              <Check size={18} className="text-blue-600" /> Perfis Verificados
-            </div>
-            <div className="absolute bottom-7 left-0 flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-4 py-2.5 text-sm font-semibold text-stone-900 shadow-md backdrop-blur sm:bottom-10 sm:left-2">
-              <Zap size={18} className="text-blue-600" /> Contato Direto
-            </div>
+          <div className="absolute bottom-7 left-0 flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-4 py-2.5 text-sm font-semibold text-stone-900 shadow-md backdrop-blur sm:bottom-10 sm:left-2">
+            <Zap size={18} className="text-blue-600" /> Contato Direto
           </div>
-        </div>
-      </section>
+        </>
+        )}
+      />
 
-      <section className="bg-[#1C1917] text-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-5 rounded-3xl border border-blue-100 bg-white p-6 text-stone-900 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 rounded-xl bg-orange-500/15 p-2.5 text-[#F97316]"><BriefcaseBusiness size={22} /></span>
+            <span className="mt-0.5 rounded-xl bg-blue-50 p-2.5 text-blue-700"><BriefcaseBusiness size={22} /></span>
             <div>
               <p className="font-display text-lg font-bold leading-snug sm:text-xl">
                 Obras e empresas buscando profissionais agora!
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-white/70">
+              <p className="mt-1 text-sm leading-relaxed text-stone-600">
                 Aumente sua visibilidade e receba solicitações de orçamento.
               </p>
             </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <button type="button" onClick={() => navigate({ name: 'jobs' })} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold text-white transition hover:border-orange-400 hover:bg-white/5">
+            <button type="button" onClick={() => navigate({ name: 'jobs' })} className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-800 transition hover:border-blue-300">
               Ver Vagas Abertas <ArrowRight size={16} />
             </button>
-            <button type="button" onClick={() => openPlans(2)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F97316] px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-600">
+            <button type="button" onClick={() => openPlans(2)} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D95D24] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#C24E1B]">
               Ativar Destaque VIP <Star size={16} fill="currentColor" />
             </button>
           </div>
@@ -202,7 +191,7 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
                   key={pill.value}
                   onClick={() => setSpecialty(pill.value)}
                   aria-pressed={specialty === pill.value}
-                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition duration-200 hover:-translate-y-0.5 hover:border-orange-300 hover:bg-orange-50 ${specialty === pill.value ? 'border-orange-500 bg-orange-500 text-white hover:!bg-orange-600' : 'border-slate-200 bg-white text-slate-700'}`}
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 ${specialty === pill.value ? 'border-[#D95D24] bg-[#D95D24] text-white hover:!bg-[#C24E1B]' : 'border-stone-200 bg-white text-stone-700'}`}
                 >
                   {pill.label}
                 </button>
@@ -287,7 +276,7 @@ export default function ProfessionalsPage({ initialSpecialty = 'all', initialCit
                   </p>
                   <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                     <button type="button" onClick={clearFilters} className="btn-outline justify-center">Limpar filtros</button>
-                    <button type="button" onClick={() => setAuthOpen(true)} className="btn-primary justify-center !bg-[#F97316] hover:!bg-orange-600">
+                    <button type="button" onClick={() => setAuthOpen(true)} className="btn-primary justify-center">
                       Cadastrar meu perfil profissional <ArrowRight size={17} />
                     </button>
                   </div>

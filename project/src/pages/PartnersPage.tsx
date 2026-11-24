@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, BadgePercent, Building2, Check, Handshake, PackageCheck, Star, Store, Truck, Wrench } from 'lucide-react';
 import PartnerRequestModal from '@/components/PartnerRequestModal';
+import PageHero from '@/components/PageHero';
 
 const categories = [
   { title: 'Lojas de materiais', detail: 'Apresente materiais, soluções e condições para profissionais e clientes.', icon: Store, image: 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=960&q=80' },
@@ -81,7 +82,7 @@ export default function PartnersPage() {
   }, [activeSlide]);
 
   return (
-    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
+    <div className="min-h-screen animate-fade-in bg-[#F7F5F0]">
       <style>{`
         @keyframes partnerKenBurns {
           from { transform: scale(1); }
@@ -94,17 +95,19 @@ export default function PartnersPage() {
           .partner-carousel-kenburns { animation: none; }
         }
       `}</style>
-      <section className="overflow-hidden bg-[#f8f5ef]">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-16">
-          <div className="motion-safe:animate-slide-up">
-            <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2 text-sm font-bold text-orange-800"><Handshake size={16} /> Programa de Parcerias</span>
-            <h1 className="mt-5 max-w-3xl font-display text-4xl font-extrabold leading-tight text-navy-950 sm:text-5xl">Sua marca ao lado de quem constrói.</h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">Aproxime sua marca de profissionais, clientes e empresas que movimentam a construção civil em todo o Brasil.</p>
-            <button type="button" onClick={() => document.getElementById('vitrine')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="btn-primary mt-6 !bg-[#F97316] hover:!bg-orange-600">
-              Conhecer a vitrine <ArrowRight size={17} />
-            </button>
-          </div>
-          <div className="relative mx-auto h-[300px] w-full max-w-xl overflow-hidden rounded-[2rem] bg-navy-900 shadow-2xl motion-safe:animate-slide-up sm:h-[390px]">
+      <PageHero
+        pageLabel="Parceiros"
+        eyebrow="Programa de Parcerias"
+        icon={Handshake}
+        title="Sua marca ao lado de quem constrói."
+        description="Aproxime sua marca de profissionais, clientes e empresas que movimentam a construção civil em todo o Brasil."
+        actions={(
+          <button type="button" onClick={() => document.getElementById('vitrine')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D95D24] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#C24E1B]">
+            Conhecer a vitrine <ArrowRight size={17} />
+          </button>
+        )}
+        visual={(
+          <div className="relative h-[300px] w-full bg-navy-900 sm:h-[390px]">
             {partnerSlides.map((slide, index) => {
               const isActive = activeSlide === index;
               return (
@@ -150,14 +153,14 @@ export default function PartnersPage() {
                   aria-pressed={activeSlide === index}
                   onClick={() => setActiveSlide(index)}
                   className={`h-2.5 rounded-full shadow transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900 ${
-                    activeSlide === index ? 'w-7 bg-[#F97316]' : 'w-2.5 bg-white/80 hover:bg-white'
+                    activeSlide === index ? 'w-7 bg-[#D95D24]' : 'w-2.5 bg-white/80 hover:bg-white'
                   }`}
                 />
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        )}
+      />
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-7 max-w-2xl">
@@ -226,10 +229,10 @@ export default function PartnersPage() {
           </div>
         </div>
 
-        <section className="mt-14 rounded-3xl bg-navy-950 p-5 text-white sm:p-8" aria-labelledby="sponsorship-title">
+        <section className="mt-14 rounded-3xl border border-stone-200/80 bg-white p-5 text-stone-900 shadow-sm sm:p-8" aria-labelledby="sponsorship-title">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div><p className="text-sm font-bold uppercase tracking-wider text-orange-300">Cotas de patrocínio</p><h2 id="sponsorship-title" className="mt-2 font-display text-2xl font-bold sm:text-3xl">Uma parceria no tamanho da sua marca.</h2></div>
-            <p className="max-w-md text-sm text-white/65">Escolha a cota que combina com seus objetivos e envie uma solicitação para nossa equipe.</p>
+            <div><p className="text-sm font-bold uppercase tracking-wider text-blue-700">Cotas de patrocínio</p><h2 id="sponsorship-title" className="mt-2 font-display text-2xl font-bold sm:text-3xl">Uma parceria no tamanho da sua marca.</h2></div>
+            <p className="max-w-md text-sm text-stone-600">Escolha a cota que combina com seus objetivos e envie uma solicitação para nossa equipe.</p>
           </div>
           <div className="mt-6 grid items-stretch gap-4 sm:grid-cols-3">
             {sponsorshipTiers.map((tier) => (

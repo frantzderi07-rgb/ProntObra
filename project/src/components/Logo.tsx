@@ -1,9 +1,6 @@
-import React from 'react';
-
 interface LogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
-  tone?: 'default' | 'light';
 }
 
 interface ProntObraMonogramIconProps {
@@ -20,7 +17,7 @@ export function ProntObraMonogramIcon({ className = '' }: ProntObraMonogramIconP
   );
 }
 
-export default function Logo({ className = '', size = 'md', tone = 'default' }: LogoProps) {
+export default function Logo({ className = '', size = 'md' }: LogoProps) {
   const iconSizes = {
     sm: 'h-10 w-10',
     md: 'h-11 w-11',
@@ -32,22 +29,19 @@ export default function Logo({ className = '', size = 'md', tone = 'default' }: 
     md: 'text-xl sm:text-2xl',
     lg: 'text-2xl sm:text-3xl',
   };
-  const titleColor = tone === 'light' ? 'text-white' : 'text-[#07193D]';
-  const sloganColor = tone === 'light' ? 'text-white/85' : 'text-slate-700';
-
   return (
     <div className={`group inline-flex max-w-full select-none items-center gap-2.5 py-1 ${className}`}>
-      <ProntObraMonogramIcon className={`${iconSizes[size]} shrink-0 transition-transform duration-300 ease-out group-hover:scale-105`} />
+      <ProntObraMonogramIcon className={`brand-logo-mark ${iconSizes[size]} shrink-0`} />
       <div className="min-w-0">
         <div translate="no" className="notranslate flex items-baseline whitespace-nowrap leading-none">
-          <span className={`${titleSizes[size]} font-extrabold tracking-tight ${titleColor}`}>
+          <span className={`brand-logo-word brand-logo-word--first ${titleSizes[size]} font-extrabold tracking-tight text-[#07193D]`}>
             Pront
           </span>
-          <span className={`${titleSizes[size]} font-extrabold tracking-tight text-[#D95D24]`}>
+          <span className={`brand-logo-word brand-logo-word--second ${titleSizes[size]} font-extrabold tracking-tight text-[#D95D24]`}>
             Obra
           </span>
         </div>
-        <span translate="no" className={`notranslate mt-1 block text-left text-[8px] font-semibold leading-tight tracking-wide sm:text-[10px] ${sloganColor}`}>
+        <span translate="no" className="brand-logo-slogan notranslate mt-1 block text-left text-[8px] font-semibold leading-tight tracking-wide text-slate-700 sm:text-[10px]">
           Quem entende de obra, encontra na ProntObra
         </span>
       </div>

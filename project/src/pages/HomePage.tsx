@@ -1,11 +1,20 @@
 import { useState } from 'react';
-import { ArrowRight, BriefcaseBusiness, Building2, GraduationCap, HardHat, ShieldCheck, Store, Users } from 'lucide-react';
+import { ArrowRight, BriefcaseBusiness, Building2, GraduationCap, HardHat, Search, ShieldCheck, Store, Users } from 'lucide-react';
 import { useNav } from '@/lib/nav';
-import type { ProfessionalWithStats } from '@/lib/types';
+import { SPECIALTIES, type ProfessionalWithStats, type UserType } from '@/lib/types';
 import ProfessionalCard from '@/components/ProfessionalCard';
 import AuthModal from '@/components/AuthModal';
+import CitySelectorSpMs from '@/components/CitySelectorSpMs';
+import PageHero from '@/components/PageHero';
 
 const audienceCards = [
+  {
+    title: 'Para Profissionais',
+    description: 'Cadastre seu perfil gratuitamente e receba oportunidades da sua região. ',
+    action: 'Criar perfil grátis',
+    icon: HardHat,
+    variant: 'professional',
+  },
   {
     title: 'Para Clientes',
     description: 'Encontre profissionais, compare experiências e solicite orçamentos com mais segurança.',
@@ -32,55 +41,70 @@ const audienceCards = [
 export default function HomePage({ professionals = [] }: { professionals?: ProfessionalWithStats[] }) {
   const { navigate } = useNav();
   const [authOpen, setAuthOpen] = useState(false);
+  const [authUserType, setAuthUserType] = useState<UserType>('client');
+  const [searchSpecialty, setSearchSpecialty] = useState('all');
+  const [searchCity, setSearchCity] = useState('');
   const highlightedProfessionals = (professionals.filter((professional) => professional.is_featured).length
     ? professionals.filter((professional) => professional.is_featured)
     : professionals).slice(0, 3);
 
   const goToAudience = (variant: typeof audienceCards[number]['variant']) => {
-    if (variant === 'client') setAuthOpen(true);
-    else navigate({ name: variant === 'jobs' ? 'jobs' : 'learn' });
+    if (variant === 'client' || variant === 'professional') {
+      setAuthUserType(variant);
+      setAuthOpen(true);
+    } else {
+      navigate({ name: variant === 'jobs' ? 'jobs' : 'learn' });
+    }
+  };
+  const searchProfessionals = (event: React.FormEvent) => {
+    event.preventDefault();
+    navigate({ name: 'professionals', specialty: searchSpecialty, city: searchCity || undefined });
   };
 
   return (
     <>
-      <div className="overflow-hidden bg-[#fcfaf6] text-navy-900">
-        <section className="relative isolate overflow-hidden bg-navy-950 text-white">
-          <div className="absolute inset-0 -z-10 bg-cover bg-center opacity-25" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1800&q=85')" }} />
-          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950 via-navy-950/90 to-navy-900/65" />
-          <div className="mx-auto grid min-h-[520px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:min-h-[590px] lg:grid-cols-12 lg:px-8 lg:py-20">
-            <div className="motion-safe:animate-slide-up lg:col-span-7">
-              <span className="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-500/10 px-3.5 py-1.5 text-xs font-semibold text-orange-300">
-                <HardHat size={15} /> Construção civil conectada
+      <div className="overflow-hidden bg-[#F7F5F0] text-stone-900">
+        <PageHero
+          showBreadcrumb={false}
+          eyebrow="Construção civil conectada"
+          icon={HardHat}
+          title="Sua obra do início ao fim, com quem realmente entende."
+          description="Encontre profissionais, oportunidades e conhecimento para transformar seus planos em uma obra bem-feita."
+          actions={(
+            <form onSubmit={searchProfessionals} className="rounded-2xl border border-stone-200 bg-stone-50 p-3 shadow-inner">
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] sm:items-end">
+                <label className="block text-xs font-semibold text-stone-600">
+                  Especialidade
+                  <select value={searchSpecialty} onChange={(event) => setSearchSpecialty(event.target.value)} className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                    <option value="all">Todas</option>
+                    {SPECIALTIES.map((specialty) => <option key={specialty} value={specialty}>{specialty}</option>)}
+                  </select>
+                </label>
+                <label className="block text-xs font-semibold text-stone-600">
+                  Cidade
+                  <CitySelectorSpMs value={searchCity} onChange={setSearchCity} placeholder="Digite sua cidade" />
+                </label>
+                <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D95D24] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#C24E1B]">
+                  <Search size={17} /> Buscar
+                </button>
+              </div>
+            </form>
+          )}
+          visual={<img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1000&q=85" alt="Casa pronta após uma obra" className="h-[300px] w-full object-cover sm:h-[390px]" />}
+          floatingBadges={(
+            <>
+              <span className="absolute left-0 top-8 inline-flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-3 py-2 text-xs font-semibold text-stone-900 shadow-md sm:left-2 sm:top-10 sm:px-4 sm:text-sm">
+                <ShieldCheck size={17} className="text-blue-600" /> Perfis Verificados
               </span>
-              <h1 className="mt-6 max-w-3xl font-display text-4xl font-extrabold leading-tight sm:text-6xl">
-                Quem entende de obra, encontra na <span className="text-orange-400">ProntObra.</span>
-              </h1>
-              <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg">
-                Profissionais, oportunidades e conhecimento para sua próxima obra, em um só lugar.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <button type="button" onClick={() => navigate({ name: 'professionals' })} className="btn-primary">
-                  <Users size={18} /> Encontrar Profissionais
-                </button>
-                <button type="button" onClick={() => navigate({ name: 'jobs' })} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/50 hover:bg-white/15">
-                  <BriefcaseBusiness size={18} /> Ver Vagas e Obras
-                </button>
-                <button type="button" onClick={() => navigate({ name: 'partners' })} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/50 hover:bg-white/15">
-                  <Store size={18} /> Lojas e Parceiros
-                </button>
-              </div>
-            </div>
-            <div className="hidden motion-safe:animate-fade-in lg:col-span-5 lg:block">
-              <div className="relative mx-auto max-w-md">
-                <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85" alt="Casa pronta após uma obra" className="h-[390px] w-full rounded-3xl object-cover shadow-2xl" />
-                <div className="absolute -bottom-5 -left-8 rounded-2xl border border-white/10 bg-white p-4 text-navy-900 shadow-xl">
-                  <p className="font-display font-bold">Sua próxima obra começa aqui.</p>
-                  <p className="mt-1 text-xs text-slate-500">Pessoas, oportunidades e conhecimento.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+              <span className="absolute right-0 top-20 inline-flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-3 py-2 text-xs font-semibold text-stone-900 shadow-md sm:right-2 sm:top-24 sm:px-4 sm:text-sm">
+                <BriefcaseBusiness size={17} className="text-blue-600" /> Vagas e Obras Ativas
+              </span>
+              <span className="absolute bottom-7 left-0 inline-flex items-center gap-2 rounded-xl border border-stone-100 bg-white/95 px-3 py-2 text-xs font-semibold text-stone-900 shadow-md sm:bottom-10 sm:left-2 sm:px-4 sm:text-sm">
+                <Store size={17} className="text-blue-600" /> Lojas Parceiras
+              </span>
+            </>
+          )}
+        />
 
         <section className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-20">
           <div className="motion-safe:animate-slide-up">
@@ -125,19 +149,19 @@ export default function HomePage({ professionals = [] }: { professionals?: Profe
           </section>
         )}
 
-        <section className="bg-white py-14 sm:py-16" aria-labelledby="audience-title">
+        <section className="py-14 sm:py-16" aria-labelledby="audience-title">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-sm font-bold uppercase tracking-wider text-orange-700">Comece por aqui</p>
               <h2 id="audience-title" className="mt-2 section-title">O que você quer fazer hoje?</h2>
             </div>
-            <div className="mt-8 grid items-stretch gap-5 md:grid-cols-3">
+            <div className="mt-8 grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {audienceCards.map(({ title, description, action, icon: Icon, variant }, index) => (
-                <article key={title} className="group flex flex-col rounded-2xl border border-slate-200 bg-[#fcfaf6] p-6 shadow-sm transition duration-300 hover:-translate-y-2 hover:border-orange-300 hover:shadow-xl motion-safe:animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-orange-700 transition duration-300 group-hover:bg-orange-500 group-hover:text-white"><Icon size={24} /></span>
-                  <h3 className="mt-5 font-display text-xl font-bold text-navy-900">{title}</h3>
+                <article key={title} className="group flex flex-col rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg motion-safe:animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-700 transition duration-300 group-hover:bg-[#0B2863] group-hover:text-white"><Icon size={24} /></span>
+                  <h3 className="mt-5 font-display text-xl font-bold text-stone-900">{title}</h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{description}</p>
-                  <button type="button" onClick={() => goToAudience(variant)} className="mt-6 inline-flex items-center gap-2 self-start text-sm font-bold text-orange-700 transition group-hover:gap-3">
+                  <button type="button" onClick={() => goToAudience(variant)} className="mt-6 inline-flex items-center gap-2 self-start rounded-full bg-[#D95D24] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#C24E1B]">
                     {action}<ArrowRight size={17} />
                   </button>
                 </article>
@@ -146,7 +170,7 @@ export default function HomePage({ professionals = [] }: { professionals?: Profe
           </div>
         </section>
       </div>
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultMode="signup" defaultUserType="client" />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} defaultMode="signup" defaultUserType={authUserType} />
     </>
   );
 }

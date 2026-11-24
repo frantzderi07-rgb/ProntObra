@@ -9,22 +9,120 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply font-sans text-navy-900 bg-gray-50 antialiased;
+    @apply font-sans text-navy-900 antialiased;
+    background-color: #F7F5F0;
   }
   h1, h2, h3, h4 {
     @apply font-display;
   }
 }
 
+@keyframes bannerSloganLtr {
+  from { transform: translateX(-10px); }
+  to { transform: translateX(10px); }
+}
+
+@keyframes brandShimmer {
+  from { transform: translateX(-140%) skewX(-18deg); }
+  to { transform: translateX(440%) skewX(-18deg); }
+}
+
+@keyframes logoConstruct {
+  0% { opacity: 0; transform: translateY(-8px) scale(0.82); }
+  65% { opacity: 1; transform: translateY(2px) scale(1.04); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes logoWordReveal {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes logoPulse {
+  0%, 88%, 100% { filter: drop-shadow(0 0 0 rgba(29, 78, 216, 0)); }
+  94% { filter: drop-shadow(0 0 5px rgba(29, 78, 216, 0.38)); }
+}
+
+.brand-banner::before {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(90deg, transparent 49.7%, rgba(96, 165, 250, 0.2) 50%, transparent 50.3%),
+    linear-gradient(0deg, transparent 49.7%, rgba(96, 165, 250, 0.2) 50%, transparent 50.3%);
+  background-size: 52px 52px;
+  content: '';
+  mask-image: linear-gradient(90deg, transparent, black 18%, black 82%, transparent);
+  pointer-events: none;
+}
+
+.brand-banner::after {
+  position: absolute;
+  inset-block: -100%;
+  left: 0;
+  width: 20%;
+  background: linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.16), transparent);
+  animation: brandShimmer 12s ease-in-out infinite;
+  content: '';
+  pointer-events: none;
+  will-change: transform;
+}
+
+.brand-banner-logo .brand-logo-word--first {
+  color: #FFFFFF;
+}
+
+.brand-banner-logo .brand-logo-slogan {
+  display: none;
+}
+
+.brand-banner-slogan-track {
+  display: inline-block;
+  animation: bannerSloganLtr 7s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.brand-logo-mark {
+  animation: logoConstruct 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both, logoPulse 5s ease-in-out 900ms infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.brand-logo-word {
+  animation: logoWordReveal 450ms ease-out both;
+}
+
+.brand-logo-word--first {
+  animation-delay: 180ms;
+}
+
+.brand-logo-word--second {
+  animation-delay: 340ms;
+}
+
+.brand-logo-slogan {
+  animation: logoWordReveal 450ms ease-out 500ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-banner::after,
+  .brand-logo-mark,
+  .brand-logo-word,
+  .brand-logo-slogan,
+  .brand-banner-slogan-track {
+    animation: none;
+    will-change: auto;
+  }
+}
+
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/30 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/30 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-navy-800 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-navy-800/20 transition-all hover:bg-navy-900 hover:shadow-xl active:scale-[0.98] disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#1C1917] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-navy-800/20 transition-all hover:bg-stone-800 hover:shadow-xl active:scale-[0.98] disabled:opacity-50;
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border-2 border-navy-200 bg-white px-5 py-3 text-sm font-semibold text-navy-700 transition-all hover:border-navy-400 hover:bg-navy-50 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-800 transition-all hover:border-blue-300 hover:bg-blue-50 active:scale-[0.98];
   }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-navy-600 transition-colors hover:bg-navy-50 hover:text-navy-900;
@@ -33,13 +131,13 @@
     @apply w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-navy-900 placeholder-gray-400 transition-colors focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200;
   }
   .card {
-    @apply rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:shadow-lg;
+    @apply rounded-3xl border border-stone-200/80 bg-white shadow-sm transition-all hover:shadow-lg;
   }
   .badge {
     @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold;
   }
   .section-title {
-    @apply font-display text-2xl font-bold text-navy-900 sm:text-3xl;
+    @apply font-display text-2xl font-bold text-stone-900 sm:text-3xl;
   }
 }
 

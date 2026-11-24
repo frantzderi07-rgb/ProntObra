@@ -3,6 +3,7 @@ import type { Job, ProfessionalWithStats, Review } from '@/lib/types';
 import CommunityBenefitsSection from '@/components/CommunityBenefitsSection';
 import CommunityFeed from '@/components/CommunityFeed';
 import { useNav } from '@/lib/nav';
+import PageHero from '@/components/PageHero';
 
 interface CommunityPageProps {
   professionals?: ProfessionalWithStats[];
@@ -27,30 +28,32 @@ export default function CommunityPage({ professionals = [], jobs = [] }: Communi
   const availableCount = professionals.filter((professional) => professional.is_available === true).length;
 
   return (
-    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
-      <section className="overflow-hidden bg-[#f8f5ef]">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-16">
-          <div className="motion-safe:animate-slide-up">
-            <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2 text-sm font-bold text-orange-800"><HardHat size={17} /> Comunidade ProntObra</span>
-            <h1 className="mt-5 max-w-2xl font-display text-4xl font-extrabold leading-tight text-navy-950 sm:text-5xl">Cada obra fica melhor quando a gente constrói junto.</h1>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">Compartilhe experiências, reconheça bons trabalhos e encontre ideias para fortalecer a comunidade da construção.</p>
-            <button type="button" onClick={() => document.getElementById('community-feed-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="btn-primary mt-6 !bg-[#F97316] hover:!bg-orange-600">
-              Conhecer a comunidade <ArrowRight size={17} />
-            </button>
-          </div>
-          <div className="relative mx-auto w-full max-w-xl motion-safe:animate-slide-up">
-            <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=85" alt="Profissionais reunidos em uma obra" className="h-[300px] w-full rounded-[2rem] object-cover shadow-2xl sm:h-[390px]" />
-            <span className="absolute -left-2 top-5 rounded-2xl border border-white/70 bg-white/95 px-4 py-3 text-sm font-semibold text-navy-900 shadow-lg sm:-left-5 sm:top-10">
-              <span className="block text-orange-600">Juntos construímos</span>mais confiança
+    <div className="min-h-screen animate-fade-in bg-[#F7F5F0]">
+      <PageHero
+        pageLabel="Comunidade"
+        eyebrow="Comunidade ProntObra"
+        icon={HardHat}
+        title="Cada obra fica melhor quando a gente constrói junto."
+        description="Compartilhe experiências, reconheça bons trabalhos e encontre ideias para fortalecer a comunidade da construção."
+        actions={(
+          <button type="button" onClick={() => document.getElementById('community-feed-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D95D24] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#C24E1B]">
+            Conhecer a comunidade <ArrowRight size={17} />
+          </button>
+        )}
+        visual={<img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=85" alt="Profissionais reunidos em uma obra" className="h-[300px] w-full object-cover sm:h-[390px]" />}
+        floatingBadges={(
+          <>
+            <span className="absolute left-0 top-8 rounded-xl border border-stone-100 bg-white/95 px-4 py-2.5 text-sm font-semibold text-stone-900 shadow-md sm:left-2 sm:top-10">
+              <span className="block text-blue-700">Juntos construímos</span>mais confiança
             </span>
-            <span className="absolute -bottom-4 right-3 rounded-2xl bg-[#1C1917] px-4 py-3 text-sm font-semibold text-white shadow-lg sm:-right-4 sm:bottom-8">
+            <span className="absolute bottom-7 right-0 rounded-xl border border-stone-100 bg-white/95 px-4 py-2.5 text-sm font-semibold text-stone-900 shadow-md sm:bottom-10 sm:right-2">
               Pessoas que fazem acontecer
             </span>
-          </div>
-        </div>
-      </section>
+          </>
+        )}
+      />
 
-      <section className="bg-[#1C1917] px-4 py-5 text-white sm:px-6 lg:px-8" aria-label="Confiança na comunidade">
+      <section className="px-4 py-5 sm:px-6 lg:px-8" aria-label="Confiança na comunidade">
         <div className="mx-auto grid max-w-7xl gap-3 sm:grid-cols-3">
           <CommunityTrust label="Perfis Verificados" icon={ShieldCheck} />
           <CommunityTrust label="Negociação 100% Direta" icon={Handshake} />
@@ -125,8 +128,8 @@ export default function CommunityPage({ professionals = [], jobs = [] }: Communi
 
 function CommunityTrust({ label, icon: Icon }: { label: string; icon: typeof ShieldCheck }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15 text-orange-400"><Icon size={20} /></span>
+    <div className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-white px-4 py-3 text-stone-800 shadow-sm">
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700"><Icon size={20} /></span>
       <span className="text-sm font-semibold">{label}</span>
     </div>
   );

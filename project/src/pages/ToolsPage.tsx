@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Calculator, ClipboardList, Copy, Plus, Printer, Ruler, Trash2, Wrench } from 'lucide-react';
+import { ArrowRight, Calculator, ClipboardList, Copy, Plus, Printer, Ruler, Trash2, Wrench } from 'lucide-react';
 import ServicePriceReference from '@/components/ServicePriceReference';
+import PageHero from '@/components/PageHero';
 
 type ToolTab = 'budget' | 'diary' | 'materials';
 interface BudgetLine { id: string; description: string; quantity: string; unitPrice: string }
@@ -102,10 +103,35 @@ export default function ToolsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
-      <section className="bg-navy-950 px-4 py-10 text-white sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl"><span className="text-sm font-bold uppercase tracking-wider text-orange-300">Ferramentas da obra</span><h1 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">Planeje, acompanhe e calcule.</h1><p className="mt-2 max-w-2xl text-sm text-white/70">Recursos gratuitos para organizar o dia a dia da construção.</p></div>
-      </section>
+    <div className="min-h-screen animate-fade-in bg-[#F7F5F0]">
+      <PageHero
+        pageLabel="Ferramentas"
+        eyebrow="Ferramentas da obra"
+        icon={Wrench}
+        title="Planeje, acompanhe e calcule."
+        description="Recursos gratuitos para organizar o dia a dia da construção."
+        actions={(
+          <button type="button" onClick={() => { setActiveTab('budget'); document.getElementById('tools-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D95D24] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#C24E1B]">
+            Conhecer ferramentas <ArrowRight size={17} />
+          </button>
+        )}
+        visual={(
+          <div className="flex h-[280px] flex-col justify-between bg-gradient-to-br from-[#07193D] via-[#0B2863] to-[#1D4ED8] p-6 text-white sm:h-[320px] sm:p-8">
+            <div>
+              <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold">Planejamento inteligente</span>
+              <h2 className="mt-4 max-w-xs text-2xl font-bold">Sua obra, organizada em cada etapa.</h2>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {tabs.map(({ id, label, icon: Icon }) => (
+                <div key={id} className="rounded-2xl border border-white/15 bg-white/10 p-3 text-center backdrop-blur">
+                  <Icon className="mx-auto text-blue-100" size={22} />
+                  <span className="mt-2 block text-[10px] font-semibold leading-tight sm:text-xs">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="mb-8 grid gap-4 md:grid-cols-3" aria-label="Ferramentas rápidas">
           {toolHighlights.map((tool, index) => (
@@ -119,8 +145,8 @@ export default function ToolsPage() {
             </button>
           ))}
         </section>
-        <div role="tablist" aria-label="Ferramentas da obra" className="mb-7 flex flex-wrap gap-2">
-          {tabs.map(({ id, label, icon: Icon }) => <button key={id} role="tab" aria-selected={activeTab === id} onClick={() => { setActiveTab(id); setError(''); }} className={`inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${activeTab === id ? 'bg-navy-900 text-white shadow' : 'border border-slate-200 bg-white text-navy-700 hover:border-orange-300'}`}><Icon size={17} />{label}</button>)}
+        <div id="tools-tabs" role="tablist" aria-label="Ferramentas da obra" className="mb-7 flex flex-wrap gap-2">
+          {tabs.map(({ id, label, icon: Icon }) => <button key={id} role="tab" aria-selected={activeTab === id} onClick={() => { setActiveTab(id); setError(''); }} className={`inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${activeTab === id ? 'bg-[#0B2863] text-white shadow' : 'border border-blue-100 bg-white text-stone-700 hover:border-blue-300'}`}><Icon size={17} />{label}</button>)}
         </div>
         {error && <p role="status" className={`mb-5 rounded-xl p-3 text-sm ${error.startsWith('Não foi') ? 'bg-amber-50 text-amber-800' : 'bg-green-50 text-green-800'}`}>{error}</p>}
         {activeTab === 'budget' && (

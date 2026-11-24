@@ -5,6 +5,7 @@ import { useNav } from '@/lib/nav';
 import { updateLocalProfile } from '@/lib/localStore';
 import AuthModal from '@/components/AuthModal';
 import { PracticalVideoCard } from '@/components/QuickVideos';
+import PageHero from '@/components/PageHero';
 
 const courses = [
   { id: 'projetos', title: 'Leitura de Projetos', description: 'Interprete plantas, cortes, escalas e especificações da obra.', duration: '2 horas', category: 'Planejamento' },
@@ -43,22 +44,23 @@ export default function LearnPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fcfaf6] animate-fade-in">
-      <section className="bg-navy-950 px-4 py-10 text-white sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-12">
-          <div className="motion-safe:animate-slide-up lg:col-span-7">
-            <div className="flex items-center gap-3 text-orange-300"><GraduationCap size={24} /><span className="text-sm font-semibold">PORTAL DE CONHECIMENTO</span></div>
-            <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl">Conhecimento que constrói</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/70 sm:text-base">Guias práticos, segurança no trabalho e capacitações para apoiar cada etapa da obra e o crescimento de quem constrói.</p>
-          </div>
-          <div className="hidden overflow-hidden rounded-3xl border border-white/10 lg:col-span-5 lg:block">
-            <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1000&q=85" alt="Profissional acompanha um projeto de construção" className="h-56 w-full object-cover" />
-          </div>
-        </div>
-      </section>
+    <div className="min-h-screen animate-fade-in bg-[#F7F5F0]">
+      <PageHero
+        pageLabel="Aprender"
+        eyebrow="Portal de conhecimento"
+        icon={GraduationCap}
+        title="Conhecimento que constrói"
+        description="Guias práticos, segurança no trabalho e capacitações para apoiar cada etapa da obra e o crescimento de quem constrói."
+        actions={(
+          <button type="button" onClick={() => document.getElementById('courses')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D95D24] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#C24E1B]">
+            Explorar cursos <ArrowRight size={17} />
+          </button>
+        )}
+        visual={<img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1000&q=85" alt="Profissional acompanha um projeto de construção" className="h-[280px] w-full object-cover sm:h-[320px]" />}
+      />
 
       <div className="mx-auto max-w-7xl space-y-12 px-4 py-10 sm:px-6 lg:px-8">
-        <section>
+        <section id="courses" className="scroll-mt-24">
           <div className="mb-5 flex items-center gap-2"><BookOpen className="text-orange-500" size={21} /><h2 className="section-title">Cursos e capacitações rápidas</h2></div>
           {message && <p role="status" className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">{message}</p>}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -103,8 +105,8 @@ export default function LearnPage() {
           </dl>
         </section>
 
-        <section className="flex flex-col items-start justify-between gap-4 rounded-2xl bg-navy-950 p-6 text-white sm:flex-row sm:items-center sm:p-8">
-          <div><p className="text-sm font-bold uppercase tracking-wider text-orange-300">Recursos gratuitos</p><h2 className="mt-2 font-display text-xl font-bold">Use as ferramentas para planejar sua próxima obra.</h2><p className="mt-2 text-sm text-white/65">Orçamento, diário e cálculo de materiais em um só lugar.</p></div>
+        <section className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-blue-100 bg-white p-6 text-stone-900 shadow-sm sm:flex-row sm:items-center sm:p-8">
+          <div><p className="text-sm font-bold uppercase tracking-wider text-blue-700">Recursos gratuitos</p><h2 className="mt-2 font-display text-xl font-bold">Use as ferramentas para planejar sua próxima obra.</h2><p className="mt-2 text-sm text-stone-600">Orçamento, diário e cálculo de materiais em um só lugar.</p></div>
           <button type="button" onClick={() => navigate({ name: 'tools' })} className="btn-primary shrink-0">Abrir Ferramentas <ArrowRight size={17} /></button>
         </section>
       </div>
